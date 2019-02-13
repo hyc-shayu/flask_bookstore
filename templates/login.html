@@ -5,13 +5,13 @@
 {% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/login_register.css') }}">
 {% endblock %}
 
 {% block main %}
     <h3 class="login-title">图书商城</h3>
     <div class="container login-container">
-        <form class="form-horizontal">
+        <form class="form-horizontal" method="post">
             <div class="form-group">
                 <input type="email" class="form-control" placeholder="用户名">
             </div>

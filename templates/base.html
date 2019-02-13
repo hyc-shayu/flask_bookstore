@@ -11,6 +11,9 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+{% for msg in get_flashed_messages()  %}
+        <script type="text/javascript">$(function () { alert( '{{ msg }}' ) })</script>
+{% endfor %}
 <nav class="navbar navbar-default">
     <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
