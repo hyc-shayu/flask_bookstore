@@ -1,15 +1,16 @@
 from app import app
 from flask import request, render_template, redirect, url_for, session, flash
+
+from forms import *
 from models import *
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-    else:
-        username = request.form.get('username')
-        password = request.form.get('password')
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
         user = User.query.filter(User.username == username, User.password == password).first()
         if user:
             session['user_id'] = user.id
@@ -19,6 +20,7 @@ def login():
         else:
             flash('用户名或密码错误')
             return redirect(url_for('login'))
+    return render_template('login.html', form=form)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -54,16 +56,39 @@ def logout():
 
 
 # 个人中心
-@app.route('/personal_information')
+@app.route('/personal_information', methods=['GET', 'POST'])
 def personal_information():
-    pass
+    form = PersonalForm()
+    user = get_user()
+    form.username.data = user.username
+    form.name.data = user.name
+    form.birthday.data = user.birthday
+    form.sex.data = user.sex
+    if form.validate_on_submit():
+        user = User.query.get(user.id)
+        user.username = form.username.data
+        user.name = form.name.data
+        user.birthday = form.birthday.data
+        user.sex = form.sex.data
+        db.session.commit()
+        flash('修改成功')
+        return redirect(url_for('personal_information'))
+    return render_template('personal_information.html', form=form)
 
 
-@app.context_processor
-def my_context_processor():
+
+def get_user():
     user_id = session.get('user_id')
     if user_id:
         user = User.query.filter(User.id == user_id).first()
         if user:
-            return {'user': user}
+            return user
+    return None
+
+
+@app.context_processor
+def my_context_processor():
+    user = get_user()
+    if user:
+        return {'user': user}
     return {}

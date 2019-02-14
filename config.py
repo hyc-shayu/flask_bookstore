@@ -1,6 +1,6 @@
 import os
 
-
+WTF_I18N_ENABLED = False
 DEBUG = True
 
 SECRET_KEY = os.urandom(24)

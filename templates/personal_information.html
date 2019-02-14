@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ user.username }}的个人中心
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/login_register.css') }}">
+{% endblock %}
+
+{% block main %}
+    <div class="container login-container">
+        {{ render_form(form) }}
+    </div>
+{% endblock %}

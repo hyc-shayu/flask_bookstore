@@ -10,3 +10,4 @@ class User(db.Model):
     sex = db.Column(db.Enum('男', '女'), default='男')
     admin = db.Column(db.Boolean, default=False)
     birthday = db.Column(db.Date)
+

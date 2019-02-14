@@ -1,10 +1,12 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import click
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
+bootstrap = Bootstrap(app)
 
 
 import views

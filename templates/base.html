@@ -11,6 +11,7 @@
     <script src="{{ url_for('static',filename='javaScript/base.js') }}"></script>
     {% block head %}
     {% endblock %}
+    {% from 'bootstrap/form.html' import render_form %}
 </head>
 <body>
 {% for msg in get_flashed_messages() %}
@@ -18,12 +19,6 @@
         alert('{{ msg }}')
     })</script>
 {% endfor %}
-{#    <script>#}
-{#        $(function () {#}
-{#            $('div.main').load('{{ url_for('index') }}');#}
-{#            return false;#}
-{#        })#}
-{#    </script>#}
     <nav class="navbar navbar-default">
         <div class="container">
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -45,19 +40,6 @@
                             class="glyphicon glyphicon-home"
                             aria-hidden="true"></span>首页 </a></li>
                     <li class="base-active"><a href="{{ url_for('index') }}">Link</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                           aria-expanded="false">Dropdown <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Action</a></li>
-                            <li><a href="#">Another action</a></li>
-                            <li><a href="#">Something else here</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">Separated link</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">One more separated link</a></li>
-                        </ul>
-                    </li>
                 </ul>
                 <form class="navbar-form navbar-left">
                     <div class="form-group">
@@ -67,24 +49,12 @@
                 </form>
                 <ul class="nav navbar-nav navbar-right">
                     {% if user %}
-                        <li class="base-active"><a href="{{ url_for('personal_information') }}">{{ user }}</a></li>
+                        <li class="base-active"><a href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
                         <li class="base-active"><a href="{{ url_for('logout') }}">注销</a></li>
                     {% else %}
                         <li class="base-active"><a href="{{ url_for('login') }}">登录</a></li>
                         <li class="base-active"><a href="{{ url_for('register') }}">注册</a></li>
                     {% endif %}
-
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                           aria-expanded="false">Dropdown <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Action</a></li>
-                            <li><a href="#">Another action</a></li>
-                            <li><a href="#">Something else here</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">Separated link</a></li>
-                        </ul>
-                    </li>
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
