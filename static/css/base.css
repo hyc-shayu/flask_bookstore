@@ -2,8 +2,16 @@
     background-color: #ffffff;
     width: 700px;
     overflow:hidden;
-    margin: 0 auto;
 }
 body{
     background-color: #f3f3f3;
+}
+.base-center{
+    width: 960px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+.left{
+    width: 200px;
+    overflow: hidden;
 }
