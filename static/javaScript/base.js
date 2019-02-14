@@ -1,17 +1,7 @@
 $(function () {
+    //激活<li>标签
     $("li.base-active").each(function () {
-        if($(this).)
+        if($(this).find("a")[0]==window.location.href)
         $(this).addClass("active");
     })
-    
-    // $("li.base-active a").each(function (e) {
-    //     if ($(this).href == window.location.href)
-    //         $(this).parent().addClass('active');
-    //     // $(this).click(function (e) {
-    //     //     $(this).siblings().removeClass("active");
-    //     //     $(this).addClass("active");
-    //     //     $('div.main').load('/login');
-    //          e.preventDefault();
-    //     // })
-    // });
 })
