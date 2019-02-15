@@ -11,3 +11,17 @@ class User(db.Model):
     admin = db.Column(db.Boolean, default=False)
     birthday = db.Column(db.Date)
 
+
+class BookClassify(db.Model):
+    __tablename__ = 'book_classify'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(50), nullable=False)
+
+
+class Book(db.Model):
+    __tablename__ = 'book'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(50), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    price = db.Column(db.Float, nullable=False)
+
