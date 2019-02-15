@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, PasswordField, RadioField, DateField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, EqualTo
 
 
 class MyBaseForm(FlaskForm):
@@ -20,3 +20,10 @@ class PersonalForm(MyBaseForm):
     birthday = DateField('生日', validators=[DataRequired()], render_kw={'placeholder': '生日'})
     sex = RadioField('性别', choices=(('男', '男'), ('女', '女')), default='男')
     submit = SubmitField('修改')
+
+
+class UpdatePasswordForm(MyBaseForm):
+    oldPassword = PasswordField('旧密码', validators=[DataRequired(), Length(3, 100)], render_kw={'placeholder': '旧密码'})
+    newPassword1 = PasswordField('新密码', validators=[DataRequired(), Length(3, 100)], render_kw={'placeholder': '新密码'})
+    newPassword2 = PasswordField('确认密码', validators=[DataRequired(), Length(3, 100), EqualTo('newPassword1', '新密码填入不一致')], render_kw={'placeholder': '确认密码'})
+    submit = SubmitField('修改密码')

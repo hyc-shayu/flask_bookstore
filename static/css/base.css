@@ -15,3 +15,12 @@ body{
     width: 15%;
     overflow: hidden;
 }
+.title{
+    margin-bottom: 50px;
+    text-align: center;
+    font-weight: bold;
+}
+.container35{
+    width: 35%;
+    margin: 0 auto;
+}

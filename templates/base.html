@@ -14,11 +14,16 @@
     {% from 'bootstrap/form.html' import render_form %}
 </head>
 <body>
-{% for msg in get_flashed_messages() %}
+{% if get_flashed_messages() %}
     <script type="text/javascript">$(function () {
-        alert('{{ msg }}')
+        alert('{{ get_flashed_messages()|first }}')
     })</script>
-{% endfor %}
+{% endif %}
+{#{% for msg in get_flashed_messages() %}#}
+{#    <script type="text/javascript">$(function () {#}
+{#        alert('{{ msg }}')#}
+{#    })</script>#}
+{#{% endfor %}#}
     <nav class="navbar navbar-default">
         <div class="container">
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -39,7 +44,7 @@
                     <li class="base-active"><a href="{{ url_for('index') }}"><span
                             class="glyphicon glyphicon-home"
                             aria-hidden="true"></span>首页 </a></li>
-                    <li class="base-active"><a href="{{ url_for('index') }}">Link</a></li>
+                    <li class="base-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>
                 </ul>
                 <form class="navbar-form navbar-left">
                     <div class="form-group">

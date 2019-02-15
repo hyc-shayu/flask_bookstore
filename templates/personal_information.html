@@ -1,15 +1,19 @@
 {% extends 'base.html' %}
 
 {% block title %}
-{{ user.username }}的个人中心
+    {{ user.username }}的个人中心
 {% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/login_register.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/personal_information.css') }}">
 {% endblock %}
 
 {% block main %}
-    <div class="container login-container">
+    <h3 class="title">{{ user.username }}的个人中心</h3>
+    <div class="container container35">
         {{ render_form(form) }}
+        <ul class="nav nav-pills">
+            <li role="presentation" class="update_password"><a href="{{ url_for('update_password') }}">修改密码</a></li>
+        </ul>
     </div>
 {% endblock %}
