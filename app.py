@@ -14,14 +14,18 @@ import models
 
 
 @app.cli.command()
-def initdb():
-    db.drop_all()
+@click.option('--drop', is_flag=True, help='Create after drop.')
+def initdb(drop):
+    if drop:
+        if click.confirm('确定删除数据库吗？'):
+            db.drop_all()
+            click.echo('Drop tables.')
     db.create_all()
-    user = models.User(username='god', password='666', admin=True)
-    user1 = models.User(username='god6', password='666')
-    db.session.add(user)
-    db.session.add(user1)
-    db.session.commit()
+    # user = models.User(username='god', password='666', admin=True)
+    # user1 = models.User(username='god6', password='666')
+    # db.session.add(user)
+    # db.session.add(user1)
+    # db.session.commit()
     click.echo('Initialized database.')
 
 

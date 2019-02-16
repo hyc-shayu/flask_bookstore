@@ -19,11 +19,11 @@
         alert('{{ get_flashed_messages()|first }}')
     })</script>
 {% endif %}
-{#{% for msg in get_flashed_messages() %}#}
-{#    <script type="text/javascript">$(function () {#}
-{#        alert('{{ msg }}')#}
-{#    })</script>#}
-{#{% endfor %}#}
+<script type="text/javascript">$(function () {
+    {% if user %}
+    alert('{{ user.admin }}');
+    {% endif %}
+})</script>
     <nav class="navbar navbar-default">
         <div class="container">
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -54,7 +54,7 @@
                 </form>
                 <ul class="nav navbar-nav navbar-right">
                     {% if user %}
-                        <li class="base-active"><a href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
+                        <li class="base-active"><a href="{% if user.admin %}/admin{{ url_for('personal_information') }}{% else %}{{ url_for('personal_information') }}{% endif %}">{{ user.username }}</a></li>
                         <li class="base-active"><a href="{{ url_for('logout') }}">注销</a></li>
                     {% else %}
                         <li class="base-active"><a href="{{ url_for('login') }}">登录</a></li>
@@ -66,11 +66,13 @@
     </nav>
     <div class="container base-center">
         <div class="container left pull-left">
-            <ul class="nav nav-pills nav-stacked">
-                <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Home</a></li>
-                <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Profile</a></li>
-                <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Messages</a></li>
-            </ul>
+            {% block left %}
+                <ul class="nav nav-pills nav-stacked">
+                    <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Profile</a></li>
+                    <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">Messages</a></li>
+                </ul>
+            {% endblock %}
         </div>
         <div class="container main pull-left">
             {% block main %}{% endblock %}

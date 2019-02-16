@@ -5,6 +5,16 @@
 {% block head %}
 
 {% endblock %}
+
+{% block left %}
+    <ul class="nav nav-pills nav-stacked">
+        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">图书分类管理</a></li>
+        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">图书管理</a></li>
+        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">订单管理</a></li>
+        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">评论管理</a></li>
+    </ul>
+{% endblock %}
+
 {% block main %}
     这是管理员
 {% endblock %}

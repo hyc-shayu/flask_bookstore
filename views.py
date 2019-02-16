@@ -59,6 +59,7 @@ def logout():
 
 
 # 个人中心
+@app.route('/admin/personal_information', methods=['GET', 'POST'])
 @app.route('/personal_information/', methods=['GET', 'POST'])
 def personal_information():
     form = PersonalForm()
@@ -100,6 +101,7 @@ def update_password():
 
 @app.route('/admin/')
 def admin_view():
+
     return render_template('admin.html')
 
 
@@ -115,10 +117,14 @@ def get_user():
 @app.before_request
 def validate_login():
     urls = request.full_path.split('/')
+    user = get_user()
     if urls[1] == 'admin':
-        if not get_user().admin:
+        if not user.admin:
             flash('你不是管理员')
             return redirect(url_for('index'))
+    elif user and user.admin:
+        flash('你不是用户')
+        return redirect(url_for('admin_view'))
 
 
 @app.context_processor

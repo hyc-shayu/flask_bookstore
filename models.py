@@ -12,23 +12,46 @@ class User(db.Model):
     admin = db.Column(db.Boolean, default=False)
     birthday = db.Column(db.Date)
 
+    recipients = db.relationship('Recipient')
+    orders = db.relationship('Order', back_populates='user')
+    cart = db.relationship('Cart', uselist=False)
+    comments = db.relationship('Comment', back_populates='from_user', foreign_keys='Comment.from_user_id')
+    replies = db.relationship('Comment', back_populates='to_user', foreign_keys='Comment.to_user_id')
+
 
 class Recipient(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     # user 外键
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # 地址不需要知道用户信息
+    # user = db.relationship('User', back_populates='recipients')
     name = db.Column(db.String(30), nullable=False)
     phone = db.Column(db.String(11), nullable=False)
     address = db.Column(db.String(100), nullable=False)
 
 
+# 删除和修改地址 保持地址不变
+# 地址id外键 冗余
 class Order(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     # user
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', back_populates='orders')
     # recipient
+    recipient_id = db.Column(db.Integer, db.ForeignKey('recipient.id'))
+    recipient = db.relationship('Recipient')
+
+    # 设置默认值
+    name = db.Column(db.String(30), nullable=False)
+    phone = db.Column(db.String(11), nullable=False)
+    address = db.Column(db.String(100), nullable=False)
+
     payment_amount = db.Column(db.Float, nullable=False)
     state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
+
+    order_items = db.relationship('OrderItem')
 
 
 class OrderItem(db.Model):
@@ -36,27 +59,39 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     price = db.Column(db.Float, nullable=False)
     # book
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    book = db.relationship('Book')
     # order
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
 
 
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     price = db.Column(db.Float, nullable=False, default=0)
     # user
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # user = db.relationship('User', back_populates='cart')
+
+    cart_items = db.relationship('CartItem')
 
 
-class CartItem(db.Column):
+class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     price = db.Column(db.Float, nullable=False)
     # cart
+    cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'))
     # book
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    book = db.relationship('Book')
 
 
 class BookClassify(db.Model):
     __tablename__ = 'book_classify'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
+
+    books = db.relationship('Book')
 
 
 class Book(db.Model):
@@ -66,6 +101,9 @@ class Book(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=0)
     price = db.Column(db.Float, nullable=False)
     # classify 分类外键
+    book_classify_id = db.Column(db.Integer, db.ForeignKey('book_classify.id'))
+
+    comments = db.relationship('Comment')
 
 
 class Comment(db.Model):
@@ -73,6 +111,13 @@ class Comment(db.Model):
     # 考虑创建索引
     publish_time = db.Column(db.DateTime, default=datetime.now)
     content = db.Column(db.Text)
-    # target_comment
     # user
+    from_user_id = db.Column('from_user_id', db.Integer, db.ForeignKey('user.id'))
+    from_user = db.relationship('User', back_populates='comments', foreign_keys=[from_user_id])
+    # to_user
+    to_user_id = db.Column('to_user_id', db.Integer, db.ForeignKey('user.id'))
+    to_user = db.relationship('User', back_populates='replies', foreign_keys=[to_user_id])
+
     # book
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    book = db.relationship('Book')
