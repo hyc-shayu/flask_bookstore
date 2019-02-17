@@ -19,6 +19,8 @@ def login():
             session[USER_ID] = user.id
             # 如果想在31天内不需要再登录
             # session.permanent = True
+            if user.admin:
+                return redirect(url_for('admin_view'))
             return redirect(url_for('index'))
         else:
             flash('用户名或密码错误')
@@ -50,6 +52,7 @@ def register():
                 return redirect(url_for('login'))
 
 
+@app.route('/admin/logout/')
 @app.route('/logout/')
 def logout():
     # session.pop('user_id')
@@ -59,7 +62,7 @@ def logout():
 
 
 # 个人中心
-@app.route('/admin/personal_information', methods=['GET', 'POST'])
+@app.route('/admin/personal_information/', methods=['GET', 'POST'])
 @app.route('/personal_information/', methods=['GET', 'POST'])
 def personal_information():
     form = PersonalForm()
@@ -99,10 +102,25 @@ def update_password():
     return render_template('update_password.html', form=form)
 
 
-@app.route('/admin/')
+@app.route('/admin/', methods=['GET', 'POST'])
 def admin_view():
+    if request.method == 'GET':
+        orders_paid = OrderTable.query.filter(OrderTable.state == '待发货').all()
+        orders_apply_return = OrderTable.query.filter(OrderTable.state == '申请退货').all()
+        comment = Comment.query.first()
+        love = comment.admin_check
+        comments_new = Comment.query.filter(Comment.admin_check == False).order_by(Comment.publish_time.desc()).all()
+        return render_template('admin.html', orders_paid=orders_paid, orders_apply_return=orders_apply_return, comments_new=comments_new)
+    else:
+        return render_template('admin.html')
 
-    return render_template('admin.html')
+
+@app.route('/admin/order_query-<order_id>')
+def order_query(order_id):
+    order = OrderTable.query.filter(OrderTable.id == order_id)
+    if order:
+        return render_template('admin.html', order=order)
+    return redirect(url_for('admin_view'))
 
 
 def get_user():
@@ -119,7 +137,7 @@ def validate_login():
     urls = request.full_path.split('/')
     user = get_user()
     if urls[1] == 'admin':
-        if not user.admin:
+        if not user or not user.admin:
             flash('你不是管理员')
             return redirect(url_for('index'))
     elif user and user.admin:

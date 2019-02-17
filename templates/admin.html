@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 {% block title %}
     管理
 {% endblock %}
@@ -6,15 +6,73 @@
 
 {% endblock %}
 
-{% block left %}
-    <ul class="nav nav-pills nav-stacked">
-        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">图书分类管理</a></li>
-        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">图书管理</a></li>
-        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">订单管理</a></li>
-        <li role="presentation" class="base-active"><a href="{{ url_for('index') }}">评论管理</a></li>
-    </ul>
-{% endblock %}
+
 
 {% block main %}
-    这是管理员
+    <br>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <span class="badge">{{ orders_paid|length }}</span>
+            待发货订单
+        </li>
+        {% for order in orders_paid %}
+            {% if loop.first %}
+                <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>用户名</th>
+                    <th>收货人</th>
+                    <th>手机号码</th>
+                    <th>地址</th>
+                </tr>
+                </thead>
+                <tbady>
+            {% endif %}
+        <tr>
+            <th scope="row"><a href="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
+            <td>{{ order.user.username }}</td>
+            <td>{{ order.name }}</td>
+            <td>{{ order.phone }}</td>
+            <td>{{ order.address }}</td>
+        </tr>
+        {% if loop.last %}
+            </tbady>
+            </table>
+        {% endif %}
+        {% endfor %}
+        <li class="list-group-item">
+            <span class="badge">{{ orders_apply_return|length }}</span>
+            退货申请
+        </li>
+        <li class="list-group-item">
+            <span class="badge">{{ comments_new|length }}</span>
+            新评论
+        </li>
+        {% for comment in comments_new %}
+            {% if loop.first %}
+                <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>评论序号</th>
+                    <th>图书</th>
+                    <th>评论者</th>
+                    <th>评论时间</th>
+                </tr>
+                </thead>
+                <tbady>
+            {% endif %}
+        <tr>
+            <th scope="row"><a href="#">评论_{{ comment.id }}</a></th>
+            <td>{{ comment.book.name }}</td>
+            <td>{{ comment.from_user.username }}</td>
+            <td>{{ comment.publish_time }}</td>
+        </tr>
+        {% if loop.last %}
+            </tbady>
+            </table>
+        {% endif %}
+        {% endfor %}
+    </ul>
+
 {% endblock %}

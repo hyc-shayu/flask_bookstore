@@ -11,9 +11,10 @@ class User(db.Model):
     sex = db.Column(db.Enum('男', '女'), default='男')
     admin = db.Column(db.Boolean, default=False)
     birthday = db.Column(db.Date)
+    # logout_time = db.Column(db.DateTime)
 
     recipients = db.relationship('Recipient')
-    orders = db.relationship('Order', back_populates='user')
+    orders = db.relationship('OrderTable', back_populates='user')
     cart = db.relationship('Cart', uselist=False)
     comments = db.relationship('Comment', back_populates='from_user', foreign_keys='Comment.from_user_id')
     replies = db.relationship('Comment', back_populates='to_user', foreign_keys='Comment.to_user_id')
@@ -32,7 +33,7 @@ class Recipient(db.Model):
 
 # 删除和修改地址 保持地址不变
 # 地址id外键 冗余
-class Order(db.Model):
+class OrderTable(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     # user
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -47,7 +48,7 @@ class Order(db.Model):
     address = db.Column(db.String(100), nullable=False)
 
     payment_amount = db.Column(db.Float, nullable=False)
-    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '已退货'), default='待付款')
+    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
 
@@ -57,12 +58,13 @@ class Order(db.Model):
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     quantity = db.Column(db.Integer, nullable=False, default=1)
-    price = db.Column(db.Float, nullable=False)
     # book
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
     book = db.relationship('Book')
+
+    price = db.Column(db.Float, nullable=False)
     # order
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    order_id = db.Column(db.Integer, db.ForeignKey('order_table.id'))
 
 
 class Cart(db.Model):
@@ -72,7 +74,7 @@ class Cart(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # user = db.relationship('User', back_populates='cart')
 
-    cart_items = db.relationship('CartItem')
+    cart_items = db.relationship('CartItem', cascade='all, delete-orphan')
 
 
 class CartItem(db.Model):
@@ -91,7 +93,7 @@ class BookClassify(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
 
-    books = db.relationship('Book')
+    books = db.relationship('Book', cascade='all, delete-orphan')
 
 
 class Book(db.Model):
@@ -103,7 +105,7 @@ class Book(db.Model):
     # classify 分类外键
     book_classify_id = db.Column(db.Integer, db.ForeignKey('book_classify.id'))
 
-    comments = db.relationship('Comment')
+    comments = db.relationship('Comment', cascade='all')
 
 
 class Comment(db.Model):
@@ -111,6 +113,7 @@ class Comment(db.Model):
     # 考虑创建索引
     publish_time = db.Column(db.DateTime, default=datetime.now)
     content = db.Column(db.Text)
+    admin_check = db.Column(db.Boolean, default=False)
     # user
     from_user_id = db.Column('from_user_id', db.Integer, db.ForeignKey('user.id'))
     from_user = db.relationship('User', back_populates='comments', foreign_keys=[from_user_id])

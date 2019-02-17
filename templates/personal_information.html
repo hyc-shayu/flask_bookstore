@@ -1,4 +1,8 @@
-{% extends 'base.html' %}
+{% if user.admin %}
+    {% extends 'admin_base.html' %}
+{% else %}
+    {% extends 'base.html' %}
+{% endif %}
 
 {% block title %}
     {{ user.username }}的个人中心

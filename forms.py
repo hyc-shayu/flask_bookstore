@@ -25,5 +25,6 @@ class PersonalForm(MyBaseForm):
 class UpdatePasswordForm(MyBaseForm):
     oldPassword = PasswordField('旧密码', validators=[DataRequired(), Length(3, 100)], render_kw={'placeholder': '旧密码'})
     newPassword1 = PasswordField('新密码', validators=[DataRequired(), Length(3, 100)], render_kw={'placeholder': '新密码'})
-    newPassword2 = PasswordField('确认密码', validators=[DataRequired(), Length(3, 100), EqualTo('newPassword1', '新密码填入不一致')], render_kw={'placeholder': '确认密码'})
+    newPassword2 = PasswordField('确认密码', validators=[DataRequired(), Length(3, 100), EqualTo('newPassword1', '新密码填入不一致')
+                                                     ], render_kw={'placeholder': '确认密码'})
     submit = SubmitField('修改密码')
