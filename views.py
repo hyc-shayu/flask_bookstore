@@ -115,6 +115,16 @@ def admin_view():
         return render_template('admin.html')
 
 
+@app.route('/admin/test')
+def test():
+    return render_template('test.html')
+
+
+@app.route('/admin/test1')
+def test1():
+    return render_template('test1.html')
+
+
 @app.route('/admin/order_query-<order_id>')
 def order_query(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id)
@@ -140,7 +150,7 @@ def validate_login():
         if not user or not user.admin:
             flash('你不是管理员')
             return redirect(url_for('index'))
-    elif user and user.admin:
+    elif urls[1] != 'static' and user and user.admin:
         flash('你不是用户')
         return redirect(url_for('admin_view'))
 
