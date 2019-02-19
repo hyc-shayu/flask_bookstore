@@ -1,28 +1,45 @@
-.main{
+.main {
     background-color: #ffffff;
     width: 80%;
-    overflow:hidden;
+    overflow: hidden;
     padding-bottom: 30px;
     padding-top: 30px;
 }
-body{
+
+body {
     background-color: #f3f3f3;
 }
-.base-center{
+
+.base-center {
     width: 63%;
     overflow: hidden;
     margin: 0 auto;
 }
-.left{
+
+.left {
     width: 15%;
     overflow: hidden;
 }
-.title{
+
+.title {
     margin-bottom: 50px;
     text-align: center;
     font-weight: bold;
 }
-.container35{
+
+.container35 {
     width: 35%;
     margin: 0 auto;
+}
+
+tr td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+li{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

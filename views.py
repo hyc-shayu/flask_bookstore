@@ -102,6 +102,7 @@ def update_password():
     return render_template('update_password.html', form=form)
 
 
+# 管理员界面
 @app.route('/admin/', methods=['GET', 'POST'])
 def admin_view():
     if request.method == 'GET':
@@ -114,18 +115,7 @@ def admin_view():
         return render_template('admin.html')
 
 
-@app.route('/admin/dialog_modal/')
-@app.route('/admin/test/')
-def test():
-    return render_template('admin_dialog_modal.html')
-
-
-@app.route('/test1/<name>')
-@app.route('/test1/')
-def test1(name='1'):
-    return name
-
-
+# 查询订单——管理员首页 表格链接
 @app.route('/admin/order_query-<order_id>/')
 def order_query(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
@@ -134,6 +124,7 @@ def order_query(order_id):
     return redirect(url_for('admin_view'))
 
 
+# 订单详情——模态框
 @app.route('/admin/update-order-<order_id>/', methods=['POST'])
 def order_update(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
@@ -146,36 +137,56 @@ def order_update(order_id):
     # return redirect(url_for(admin_view))
 
 
-@app.route('/admin/reply_view_<book_id>_<page>')
-@app.route('/admin/reply_view_<book_id>')
-def admin_reply_view(book_id, page=1):
-    book = Book.query.filter(Book.id == book_id).one()
-    comments_list = Comment.query.filter(Comment.book_id == book_id).order_by(Comment.publish_time.desc()).paginate(
-        page, PAGE_SIZE, False).items
-    return render_template('admin_reply.html', book=book, comments=comments_list)
-
-
+# 评论查看页面——局部刷新
 @app.route('/admin/comments_manage_<page>')
 @app.route('/admin/comments_manage')
 def admin_comments_view(page=1):
-    total = Comment.query.all().count()
-    total_page = total/PAGE_SIZE
-    if total % PAGE_SIZE !=0:
+    total = len(Comment.query.all())
+    total_page = int(total/PAGE_SIZE)
+    if total % PAGE_SIZE != 0:
         total_page += 1
-
     comments_list = Comment.query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False).items
     return render_template('admin_comments_view.html', comments=comments_list, total_page=total_page)
 
 
+# 图书评论-按书分类显示评论——局部刷新
 @app.route('/admin/comments_manage_by_book_<page>')
 @app.route('/admin/comments_manage_by_book')
 def admin_comments_manage_by_book(page=1):
-    books_list = Book.query.all().paginate(page, PAGE_SIZE, False).items
-    render_template('admin_comments_book.html', books=books_list)
+    total = len(Book.query.all())
+    total_page = int(total / PAGE_SIZE)
+    if total % PAGE_SIZE != 0:
+        total_page += 1
+    books_list = Book.query.paginate(page, PAGE_SIZE, False).items
+    return render_template('admin_comments_book.html', books=books_list, total_page=total_page)
 
 
+# 图书详情-模态框ajax
+@app.route('/admin/book_detail_<page>', methods=['POST'])
+@app.route('/admin/book_detail', methods=['POST'])
+def book_detail(page=1):
+    comment_id = request.form.get('comment_id')
+    book_id = request.form.get('book_id')
+    comment_query = Comment.query.filter(Comment.book_id == book_id)
+    # 如果是查看具体某条评论
+    if comment_id:
+        comments = comment_query.order_by(Comment.publish_time.desc()).all()
+        comment = comment_query.filter(Comment.id == comment_id).one()
+        index = comments.index(comment)
+        page = int(index/PAGE_SIZE)+1
+
+    comments_list = comment_query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False).items
+    total = len(comment_query.all())
+    total_page = int(total / PAGE_SIZE)
+    if total % PAGE_SIZE != 0:
+        total_page += 1
+    book = Book.query.filter(Book.id == book_id)
+    return render_template('book_detail.html', book=book, comments=comments_list, total_page=total_page)
+
+
+# 回复评论——模态框ajax
 @app.route('/admin/reply/', methods=['POST'])
-def admin_reply():
+def comment_reply():
     book_id = request.form.get('book_id')
     target_id = request.form.get('target_id')
     author = get_user()

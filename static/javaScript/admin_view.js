@@ -17,7 +17,7 @@ $(function () {
 
     let url,target_id;
     //传什么数据给后台
-    $('tbody th a').click(function () {
+    $('tbody tr th a').click(function () {
         url = $(this).attr('href');
     });
     $('#exampleModal').on('show.bs.modal', function (event) {
@@ -29,7 +29,7 @@ $(function () {
         // var modal = $(this)
         // modal.find('.modal-title').text('New message to ' + recipient)
         // modal.find('.modal-body input').val(recipient)
-    })
+    });
 
     $(".userMenu").on("click", "li", function () {
         let sId = "#" + $(this).data("id");  //获取data-id的值

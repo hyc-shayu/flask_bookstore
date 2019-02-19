@@ -1,0 +1,15 @@
+{% for comment in comments %}
+    <blockquote>
+        <p>{{ comment.content }}</p>
+        <footer><<{{ comment.book.name }}>>&nbsp;&nbsp;&nbsp;{{ comment.from_user.username }}&nbsp;&nbsp;
+            {% if comment.to_user %}
+                <cite>@{{ comment.to_user.username }}</cite>&nbsp;&nbsp;
+            {% endif %}
+            &nbsp;<cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
+        </footer>
+    </blockquote>
+
+    {% if loop.last and total_page>1 %}
+        下一页
+    {% endif %}
+{% endfor %}
