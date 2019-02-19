@@ -10,23 +10,6 @@
 
 
 {% block main %}
-    <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="###" onclick="showAtRight('/admin/test')"><i class="fa fa-users"></i> 用户列表</a></li>
-            <li><a href="###" onclick="showAtRight('/admin/test1')"><i class="fa fa-list-alt"></i> 产品列表</a></li>
-            <li><a href="###" onclick="showAtRight('/admin/test')"><i class="fa fa-list"></i> 订单列表</a></li>
-        </ul>
-    </div>
-    <div class="userWrap">
-        <ul class="userMenu">
-            <li class="current" data-id="center">用户中心</li>
-            <li data-id="account">账户信息</li>
-            <li data-id="trade">交易记录</li>
-            <li data-id="info">消息中心</li>
-        </ul>
-        <div id="content">hhhhhhhhhhhhhhh</div>
-    </div>
-    <br>
     <ul class="list-group">
         <li class="list-group-item">
             <span class="badge">{{ orders_paid|length }}</span>
@@ -47,7 +30,7 @@
                 <tbady>
             {% endif %}
         <tr>
-            <th scope="row"><a href="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
+            <th scope="row"><a data-toggle="modal" data-target="#exampleModal" href="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
             <td>{{ order.user.username }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.phone }}</td>
@@ -117,6 +100,11 @@
         {% endif %}
         {% endfor %}
     </ul>
+{#    模态框 #}
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open modal for @getbootstrap</button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+
+    </div>
 {% endblock %}
 {% block body_end %}
 

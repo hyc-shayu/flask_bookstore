@@ -2,6 +2,8 @@
     background-color: #ffffff;
     width: 80%;
     overflow:hidden;
+    padding-bottom: 30px;
+    padding-top: 30px;
 }
 body{
     background-color: #f3f3f3;

@@ -47,7 +47,7 @@ class OrderTable(db.Model):
     phone = db.Column(db.String(11), nullable=False)
     address = db.Column(db.String(100), nullable=False)
 
-    payment_amount = db.Column(db.Float, nullable=False)
+    payment_amount = db.Column(db.Float, nullable=False, default=0)
     state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
