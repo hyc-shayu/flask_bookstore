@@ -1,10 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                    aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="exampleModalLabel">{{ book.name }}</h4>
+        </div>
+        <div class="modal-body">
+            <dl>
+                <dt>库存</dt>
+                <dd>{{ book.quantity }}</dd>
+                <dt>价格</dt>
+                <dd>{{ book.price }}</dd>
+            </dl>
+            <br>
+            {% for comment in book.comments %}
 
-</body>
-</html>
+                <blockquote>
+                    <p><a href="javascript:void(0);" data-url="{{ url_for('book_detail') }}"
+                          data-book_id="{{ comment.book_id }}" data-comment_id="{{ comment.id }}"
+                          data-toggle="modal" data-target="#modal-comment-book">{{ comment.content }}</a></p>
+                    <footer><<{{ comment.book.name }}>>&nbsp;&nbsp;&nbsp;{{ comment.from_user.username }}&nbsp;&nbsp;
+                        {% if comment.to_user %}
+                            <cite>回复</cite>&nbsp;&nbsp;{{ comment.to_user.username }}&nbsp;&nbsp;
+                        {% endif %}
+                        <cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
+                    </footer>
+                </blockquote>
+
+                {% if loop.last and total_page>1 %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li class="aj">
+                                <a {% if current_page!=1 %}href="#page{{ current_page - 1 }}"
+                                   data-id="page{{ current_page - 1 }}"
+                                   data-href="{{ url_for('admin_comments_view',page = current_page - 1) }}"{% endif %}
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% for page in range(total_page) %}
+                                <li class="aj"><a href="#page{{ page + 1 }}" data-id="page{{ page + 1 }}"
+                                                  data-href="{{ url_for('admin_comments_view',page=page + 1) }}">{{ page + 1 }}</a>
+                                </li>
+                            {% endfor %}
+
+                            <li class="aj">
+                                <a {% if current_page!=total_page %}href="#page{{ current_page + 1 }}"
+                                   data-id="page{{ current_page + 1 }}"
+                                   data-href="{{ url_for('admin_comments_view',page = current_page + 1) }}"{% endif %}
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button id="submit_btn" type="button" class="btn btn-primary"
+                    data-url="{{ url_for('order_update', order_id=1) }}">修改
+            </button>
+        </div>
+    </div>
+</div>

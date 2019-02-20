@@ -40,7 +40,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="base-active"><a href="{{ url_for('admin_view') }}"><span
+                <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}"><span
                         class="glyphicon glyphicon-home"
                         aria-hidden="true"></span>首页-管理员 </a></li>
             </ul>
@@ -56,9 +56,9 @@
                 <button type="submit" class="btn btn-default">查找</button>
             </form>
             <ul class="nav navbar-nav navbar-right">
-                <li class="base-active"><a href="/admin{{ url_for('personal_information') }}">{{ user.username }}</a>
+                <li class="base-active nav-active"><a href="/admin{{ url_for('personal_information') }}">{{ user.username }}</a>
                 </li>
-                <li class="base-active"><a href="/admin{{ url_for('logout') }}">注销</a></li>
+                <li class="base-active nav-active"><a href="/admin{{ url_for('logout') }}">注销</a></li>
             </ul>
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
@@ -67,11 +67,11 @@
     <div class="container left pull-left">
         {% block left %}
             <ul class="nav nav-pills nav-stacked">
-                <li role="presentation" class="base-active active aj"><a data-id="a0" href="{{ url_for('index') }}">图书分类管理</a></li>
-                <li role="presentation" class="base-active active aj"><a data-id="a1" href="{{ url_for('index') }}">图书管理</a></li>
-                <li role="presentation" class="base-active active aj"><a data-id="a2" href="{{ url_for('index') }}">订单管理</a></li>
-                <li role="presentation" class="base-active active aj"><a data-id="a3" href="javascript:void(0);" data-href="{{ url_for('admin_comments_view') }}">查看所有评论</a></li>
-                <li role="presentation" class="base-active active aj"><a data-id="a4" href="javascript:void(0);" data-href="{{ url_for('admin_comments_manage_by_book') }}">查看图书评论</a></li>
+                <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">图书分类管理</a></li>
+                <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">图书管理</a></li>
+                <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">订单管理</a></li>
+                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_view') }}">查看所有评论</a></li>
+                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_manage_by_book') }}">查看图书评论</a></li>
             </ul>
         {% endblock %}
     </div>

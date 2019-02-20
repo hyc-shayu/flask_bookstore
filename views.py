@@ -102,15 +102,22 @@ def update_password():
     return render_template('update_password.html', form=form)
 
 
-# 管理员界面
+# 管理员界面 显示最新记录10条
 @app.route('/admin/', methods=['GET', 'POST'])
 def admin_view():
     if request.method == 'GET':
         orders_paid = OrderTable.query.filter(OrderTable.state == '待发货').all()
+        orders_paid_count = len(orders_paid)
+        orders_paid = orders_paid[0:PAGE_SIZE]
         orders_apply_return = OrderTable.query.filter(OrderTable.state == '申请退货').all()
+        orders_apply_return_count = len(orders_apply_return)
+        orders_apply_return = orders_apply_return[0:PAGE_SIZE]
         comments_new = Comment.query.filter(Comment.admin_check == False).order_by(Comment.publish_time.desc()).all()
+        comments_new_count = len(comments_new)
+        comments_new = comments_new[0:PAGE_SIZE]
         return render_template('admin.html', orders_paid=orders_paid, orders_apply_return=orders_apply_return,
-                               comments_new=comments_new)
+                               comments_new=comments_new, orders_apply_return_count=orders_apply_return_count, orders_paid_count=orders_paid_count,
+                               comments_new_count=comments_new_count)
     else:
         return render_template('admin.html')
 
@@ -180,8 +187,8 @@ def book_detail(page=1):
     total_page = int(total / PAGE_SIZE)
     if total % PAGE_SIZE != 0:
         total_page += 1
-    book = Book.query.filter(Book.id == book_id)
-    return render_template('book_detail.html', book=book, comments=comments_list, total_page=total_page)
+    book = Book.query.filter(Book.id == book_id).one()
+    return render_template('book_detail.html', book=book, comments=comments_list, total_page=total_page, current_page=page)
 
 
 # 回复评论——模态框ajax

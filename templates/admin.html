@@ -3,6 +3,7 @@
     管理
 {% endblock %}
 {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/admin.css') }}">
     <script src="{{ url_for('static',filename='javaScript/admin_view.js') }}"></script>
 {% endblock %}
 
@@ -11,7 +12,7 @@
 {% block main %}
     <ul class="list-group">
         <li class="list-group-item">
-            <span class="badge">{{ orders_paid|length }}</span>
+            <span class="badge">{{ orders_paid_count }}</span>
             待发货订单
         </li>
         {% for order in orders_paid %}
@@ -41,7 +42,7 @@
         {% endif %}
         {% endfor %}
         <li class="list-group-item">
-            <span class="badge">{{ orders_apply_return|length }}</span>
+            <span class="badge">{{ orders_apply_return_count }}</span>
             退货申请
         </li>
         {% for order in orders_apply_return %}
@@ -71,7 +72,7 @@
         {% endif %}
         {% endfor %}
         <li class="list-group-item">
-            <span class="badge">{{ comments_new|length }}</span>
+            <span class="badge">{{ comments_new_count}}</span>
             新评论
         </li>
         {% for comment in comments_new %}
@@ -100,7 +101,6 @@
         {% endfor %}
     </ul>
 {#    模态框 #}
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open modal for @getbootstrap</button>
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
 
     </div>
