@@ -3,13 +3,31 @@
         <p>{{ comment.content }}</p>
         <footer><<{{ comment.book.name }}>>&nbsp;&nbsp;&nbsp;{{ comment.from_user.username }}&nbsp;&nbsp;
             {% if comment.to_user %}
-                <cite>@{{ comment.to_user.username }}</cite>&nbsp;&nbsp;
+                <cite>回复</cite>&nbsp;&nbsp;{{ comment.to_user.username }}&nbsp;&nbsp;
             {% endif %}
-            &nbsp;<cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
+            <cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
         </footer>
     </blockquote>
 
     {% if loop.last and total_page>1 %}
-        下一页
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="aj">
+                    <a href="" {% if current_page!=1 %}data-id="page{{ current_page - 1 }}" data-href="{{ url_for('admin_comments_view',page = current_page - 1) }}"{% endif %} aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% for page in range(total_page) %}
+                    <li class="aj"><a href="" data-id="page{{ page + 1 }}" data-href="{{ url_for('admin_comments_view',page=page + 1) }}">{{ page + 1 }}</a></li>
+                {% endfor %}
+
+                <li class="aj">
+                    <a href="" {% if current_page!=total_page %}data-id="page{{ current_page + 1 }}" data-href="{{ url_for('admin_comments_view',page = current_page + 1) }}"{% endif %} aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     {% endif %}
+
 {% endfor %}

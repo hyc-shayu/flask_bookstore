@@ -138,7 +138,7 @@ def order_update(order_id):
 
 
 # 评论查看页面——局部刷新
-@app.route('/admin/comments_manage_<page>')
+@app.route('/admin/comments_manage_<int:page>')
 @app.route('/admin/comments_manage')
 def admin_comments_view(page=1):
     total = len(Comment.query.all())
@@ -146,11 +146,11 @@ def admin_comments_view(page=1):
     if total % PAGE_SIZE != 0:
         total_page += 1
     comments_list = Comment.query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False).items
-    return render_template('admin_comments_view.html', comments=comments_list, total_page=total_page)
+    return render_template('admin_comments_view.html', comments=comments_list, total_page=total_page, current_page=page)
 
 
 # 图书评论-按书分类显示评论——局部刷新
-@app.route('/admin/comments_manage_by_book_<page>')
+@app.route('/admin/comments_manage_by_book_<int:page>')
 @app.route('/admin/comments_manage_by_book')
 def admin_comments_manage_by_book(page=1):
     total = len(Book.query.all())
@@ -162,7 +162,7 @@ def admin_comments_manage_by_book(page=1):
 
 
 # 图书详情-模态框ajax
-@app.route('/admin/book_detail_<page>', methods=['POST'])
+@app.route('/admin/book_detail_<int:page>', methods=['POST'])
 @app.route('/admin/book_detail', methods=['POST'])
 def book_detail(page=1):
     comment_id = request.form.get('comment_id')

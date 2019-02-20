@@ -31,6 +31,7 @@ $(function () {
         // modal.find('.modal-body input').val(recipient)
     });
 
+
     $(".userMenu").on("click", "li", function () {
         let sId = "#" + $(this).data("id");  //获取data-id的值
         window.location.hash = sId;  //设置锚点
