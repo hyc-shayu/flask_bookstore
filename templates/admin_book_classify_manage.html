@@ -1,0 +1,57 @@
+<div class="container show_modal">
+    <table class="table table-hover">
+        <tbody>
+        {% for book_classify in paginate.items %}
+            <tr>
+                <th scope="row">{{ book_classify.name }}</th>
+                <td><a href="javascript:void(0);" onclick="setModal()" class="btn pull-right" data-toggle="modal"
+                       data-target="#modal-book_classify-del">删除</a>
+                    <a href="javascript:void(0);" class="btn pull-right" data-toggle="modal"
+                       data-target="#modal-book_classify-add_or_update">修改</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="javascript:void(0);" class="btn btn-primary pull-right" data-toggle="modal"
+       data-target="#modal-book_classify-add_or_update">增加图书分类
+    </a>
+</div>
+{#    添加更新图书分类的模态框 #}
+<div class="modal fade" id="modal-book_classify-add_or_update" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel"></h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">Message:</label>
+                        <textarea class="form-control" id="message-text"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Send message</button>
+            </div>
+        </div>
+    </div>
+</div>
+{#    删除图书分类的模态框 #}
+<div class="modal fade" id="modal-book_classify-del" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h4 class="text-center">删除图书分类将会删除该分类下面的所有图书信息\n确定要删除吗？</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+

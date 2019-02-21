@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}">
     <script src="{{ url_for('static',filename='javaScript/base.js') }}"></script>
     <script src="{{ url_for('static',filename='javaScript/admin_base.js') }}"></script>
+    <script src="{{ url_for('static',filename='javaScript/admin_view.js') }}"></script>
     {% block head %}
     {% endblock %}
     {% from 'bootstrap/form.html' import render_form %}
@@ -67,7 +68,7 @@
     <div class="container left pull-left">
         {% block left %}
             <ul class="nav nav-pills nav-stacked">
-                <li role="presentation" class="base-active active test"><a href="javascript:void(0);">图书分类管理</a></li>
+                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('book_classify_manage') }}">图书分类管理</a></li>
                 <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">图书管理</a></li>
                 <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">订单管理</a></li>
                 <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_view') }}">查看所有评论</a></li>

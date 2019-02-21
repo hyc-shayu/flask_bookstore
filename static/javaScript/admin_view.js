@@ -1,11 +1,11 @@
 $(function () {
 
     // 显示 订单详情 模态框
-    $('tbody tr th a').click(function () {
+    $('tbody tr th').off('click', 'a').on('click', 'a', function () {
         let url = $(this).data('url');
         let book_id = $(this).data('book_id');
         let comment_id = $(this).data('comment_id');
-        $('#exampleModal').on('show.bs.modal', function () {
+        $('#exampleModal').off('show.bs.modal').on('show.bs.modal', function () {
             if (url) {
                 if (comment_id) {
                     $.ajax({
@@ -17,7 +17,7 @@ $(function () {
                         },
                         dataType: 'html',
                         success: function (data) {//返回数据根据结果进行相应的处理
-                            $(this).html(data);
+                            $("#exampleModal").html(data);
                         },
                         error: function () {
                             alert('error');
@@ -40,15 +40,16 @@ $(function () {
         let url = $(this).data('url');
         let book_id = $(this).data("book_id");
         let comment_id = $(this).data('comment_id');
+        let data = {
+            book_id: book_id,
+            comment_id: comment_id
+        };
         $('.modal-book-detail:first').off('show.bs.modal').on('show.bs.modal', function () {
             if (url)
                 $.ajax({
                     type: "POST",
                     url: url,
-                    data: {
-                        book_id: book_id,
-                        comment_id: comment_id
-                    },
+                    data: data,
                     dataType: 'html',
                     success: function (data) {//返回数据根据结果进行相应的处理
                         $(".modal-book-detail:first").html(data);
@@ -58,5 +59,13 @@ $(function () {
                     }
                 });
         });
+        $('.modal-book-detail:first').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+            let url = $("div.main-div .aj .active:first").data('href');
+            if (url)
+                $("div.main").load(url);
+        });
     });
+
+    //管理员修改增加图书分类 - 模态框
+    $
 });

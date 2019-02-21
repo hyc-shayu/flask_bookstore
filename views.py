@@ -144,12 +144,49 @@ def order_update(order_id):
     # return redirect(url_for(admin_view))
 
 
+# 查看图书分类-局部刷新
+@app.route('/admin/book_classify_manage_<int:page>')
+@app.route('/admin/book_classify_manage')
+def book_classify_manage(page=1):
+    paginate = BookClassify.query.paginate(page, PAGE_SIZE, False)
+    return render_template('admin_book_classify_manage.html', paginate=paginate)
+
+
+# 增加图书分类-模态框
+@app.route('/admin/book_classify_add', methods=["POST"])
+def book_classify_add():
+    name = request.form.get('name')
+    book_classify = BookClassify(name=name)
+    db.session.add(book_classify)
+    db.session.commit()
+    return ''
+
+
+# 删除图书分类
+@app.route('/admin/book_classify_del_<book_classify_id>', methods=['POST'])
+def book_classify_del(book_classify_id):
+    book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
+    db.session.remove(book_classify)
+    db.session.commit()
+    return ''
+
+
+# 修改图书分类-模态框
+@app.route('/admin/book_classify_update', methods=["POST"])
+def book_classify_update():
+    book_classify_id = request.form.get('book_classify_id')
+    book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id)
+    book_classify.name = request.form.get("name")
+    db.session.commit()
+    return ''
+
+
 # 评论查看页面——局部刷新
 @app.route('/admin/comments_manage_<int:page>')
 @app.route('/admin/comments_manage')
 def admin_comments_view(page=1):
     paginate = Comment.query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False)
-    return render_template('admin_comments_view.html',paginate=paginate)
+    return render_template('admin_comments_view.html', paginate=paginate)
 
 
 # 图书评论-按书分类显示评论——局部刷新
