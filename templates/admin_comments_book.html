@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% for book in paginate.items %}
+    <div class="col-xs-6 col-md-3">
+        <div class="thumbnail show_modal">
+            <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+               data-url="{{ url_for('book_detail',book_id=book.id) }}"
+               class="thumbnail">
+                <img src="{{ url_for('static',filename='image/icon.png') }}" alt="{{ book.name }}" style="height: 200px; width: 100%; display: block;">
+            </a>
+            <h4 class="text-center">{{ book.name }}</h4>
+        </div>
+    </div>
+{% endfor %}
+{#    模态框 #}
+<div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+     aria-labelledby="exampleModalLabel">
+</div>

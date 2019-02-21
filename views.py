@@ -148,32 +148,28 @@ def order_update(order_id):
 @app.route('/admin/comments_manage_<int:page>')
 @app.route('/admin/comments_manage')
 def admin_comments_view(page=1):
-    total = len(Comment.query.all())
-    total_page = int(total/PAGE_SIZE)
-    if total % PAGE_SIZE != 0:
-        total_page += 1
-    comments_list = Comment.query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False).items
-    return render_template('admin_comments_view.html', comments=comments_list, total_page=total_page, current_page=page)
+    paginate = Comment.query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False)
+    return render_template('admin_comments_view.html',paginate=paginate)
 
 
 # 图书评论-按书分类显示评论——局部刷新
 @app.route('/admin/comments_manage_by_book_<int:page>')
 @app.route('/admin/comments_manage_by_book')
 def admin_comments_manage_by_book(page=1):
-    total = len(Book.query.all())
-    total_page = int(total / PAGE_SIZE)
-    if total % PAGE_SIZE != 0:
-        total_page += 1
-    books_list = Book.query.paginate(page, PAGE_SIZE, False).items
-    return render_template('admin_comments_book.html', books=books_list, total_page=total_page)
+    paginate = Book.query.paginate(page, PAGE_SIZE, False)
+    return render_template('admin_comments_book.html', paginate=paginate)
 
 
 # 图书详情-模态框ajax
-@app.route('/admin/book_detail_<int:page>', methods=['POST'])
+@app.route('/admin/book_detail_<int:book_id>_<int:page>', methods=['POST'])
+@app.route('/admin/book_detail_<int:book_id>', methods=['POST'])
 @app.route('/admin/book_detail', methods=['POST'])
-def book_detail(page=1):
+def book_detail(book_id=-1,page=1):
     comment_id = request.form.get('comment_id')
-    book_id = request.form.get('book_id')
+    get_page = request.form.get('page')
+    if book_id == -1:
+        book_id = request.form.get('book_id')
+    page = get_page if get_page else page
     comment_query = Comment.query.filter(Comment.book_id == book_id)
     # 如果是查看具体某条评论
     if comment_id:
@@ -182,13 +178,14 @@ def book_detail(page=1):
         index = comments.index(comment)
         page = int(index/PAGE_SIZE)+1
 
-    comments_list = comment_query.order_by(Comment.publish_time.desc()).paginate(page, PAGE_SIZE, False).items
-    total = len(comment_query.all())
-    total_page = int(total / PAGE_SIZE)
-    if total % PAGE_SIZE != 0:
-        total_page += 1
+    paginate = comment_query.order_by(Comment.publish_time.desc()).paginate(int(page), PAGE_SIZE, False)
+    comments_list = paginate.items
+    if get_user().admin:
+        for comment in comments_list:
+            comment.admin_check = True
+        db.session.commit()
     book = Book.query.filter(Book.id == book_id).one()
-    return render_template('book_detail.html', book=book, comments=comments_list, total_page=total_page, current_page=page)
+    return render_template('book_detail.html', book=book, paginate=paginate)
 
 
 # 回复评论——模态框ajax
@@ -198,8 +195,9 @@ def comment_reply():
     target_id = request.form.get('target_id')
     author = get_user()
     content = request.form.get('content')
-    comment = Comment(admin_check=True, from_user_id=author.id, to_user_id=target_id, book_id=book_id, content=content)
+    comment = Comment(admin_check=author.admin, from_user_id=author.id, to_user_id=target_id, book_id=book_id, content=content)
     db.session.add(comment)
+    db.session.commit()
     return jsonify()
 
 

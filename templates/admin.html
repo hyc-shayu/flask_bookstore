@@ -30,7 +30,8 @@
                 <tbady>
             {% endif %}
         <tr>
-            <th scope="row"><a data-toggle="modal" data-target="#exampleModal" href="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
+            <th scope="row"><a data-toggle="modal" data-target="#exampleModal" href="javascript:void(0);"
+                               data-url="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
             <td>{{ order.user.username }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.phone }}</td>
@@ -60,7 +61,8 @@
                 <tbady>
             {% endif %}
         <tr>
-            <th scope="row"><a href="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
+            <th scope="row"><a data-toggle="modal" data-target="#exampleModal" href="javascript:void(0);"
+                               data-url="{{ url_for('order_query', order_id=order.id) }}">订单_{{ order.id }}</a></th>
             <td>{{ order.user.username }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.phone }}</td>
@@ -89,7 +91,9 @@
                 <tbady>
             {% endif %}
         <tr>
-            <th scope="row"><a href="#">评论_{{ comment.id }}</a></th>
+            <th scope="row"><a data-toggle="modal" data-target="#exampleModal" href="javascript:void(0);"
+                               data-book_id="{{ comment.book_id }}" data-comment_id="{{ comment.id }}"
+                               data-url="{{ url_for('book_detail') }}">评论_{{ comment.id }}</a></th>
             <td>{{ comment.book.name }}</td>
             <td>{{ comment.from_user.username }}</td>
             <td>{{ comment.publish_time }}</td>
@@ -102,6 +106,5 @@
     </ul>
 {#    模态框 #}
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
-
     </div>
 {% endblock %}

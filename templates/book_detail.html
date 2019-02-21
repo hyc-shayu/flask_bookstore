@@ -1,4 +1,5 @@
-<div class="modal-dialog" role="document">
+<div class="modal-dialog book_detail_dialog" role="document" data-book_id="{{ book.id }}"
+     data-first_page="{{ url_for('book_detail') }}">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -13,41 +14,59 @@
                 <dd>{{ book.price }}</dd>
             </dl>
             <br>
-            {% for comment in book.comments %}
+            {% for comment in paginate.items %}
 
                 <blockquote>
-                    <p><a href="javascript:void(0);" data-url="{{ url_for('book_detail') }}"
-                          data-book_id="{{ comment.book_id }}" data-comment_id="{{ comment.id }}"
-                          data-toggle="modal" data-target="#modal-comment-book">{{ comment.content }}</a></p>
-                    <footer><<{{ comment.book.name }}>>&nbsp;&nbsp;&nbsp;{{ comment.from_user.username }}&nbsp;&nbsp;
+                    <p>{{ comment.content }}</p>
+                    <footer>&nbsp;{{ comment.from_user.username }}&nbsp;&nbsp;
                         {% if comment.to_user %}
                             <cite>回复</cite>&nbsp;&nbsp;{{ comment.to_user.username }}&nbsp;&nbsp;
                         {% endif %}
                         <cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
+                        {% if user and user.id != comment.from_user_id %}
+                            <p class="text-right"><a href="javascript:void(0);"
+                                                     onclick="setTarget('{{ comment.from_user_id }}','{{ comment.from_user.username }}')">回复</a>
+                            </p>
+                        {% endif %}
                     </footer>
                 </blockquote>
-
-                {% if loop.last and total_page>1 %}
+                {# 分页 #}
+                {% if loop.last and paginate.pages>1 %}
                     <nav aria-label="Page navigation">
                         <ul class="pagination">
-                            <li class="aj">
-                                <a {% if current_page!=1 %}href="#page{{ current_page - 1 }}"
-                                   data-id="page{{ current_page - 1 }}"
-                                   data-href="{{ url_for('admin_comments_view',page = current_page - 1) }}"{% endif %}
+                            <li class="ajPage">
+                                <a {% if paginate.has_prev %}href="javascript:void(0);"
+                                   data-page="{{ paginate.prev_num }}"
+                                   data-href="{{ url_for('book_detail',page = paginate.prev_num) }}"{% endif %}
                                    aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            {% for page in range(total_page) %}
-                                <li class="aj"><a href="#page{{ page + 1 }}" data-id="page{{ page + 1 }}"
-                                                  data-href="{{ url_for('admin_comments_view',page=page + 1) }}">{{ page + 1 }}</a>
+                            {% if paginate.pages<10 %}
+                                {% for page in range(paginate.pages) %}
+                                    <li class="ajPage"><a href="javascript:void(0);" data-page="{{ page + 1 }}"
+                                                          data-href="{{ url_for('book_detail') }}">{{ page + 1 }}</a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="aj"><a href="javascript:void(0);"data-page="1" data-href="{{ url_for('book_detail') }}">1</a>
                                 </li>
-                            {% endfor %}
+                                <li class="ellipsis">...</li>
+                                {% for page in range(paginate.page - 3,paginate.page + 4) %}
+                                    <li class="aj"><a href="javascript:void(0);" data-page="{{ page }}"
+                                                      data-href="{{ url_for('book_detail') }}">{{ page }}</a>
+                                    </li>
+                                {% endfor %}
+                                <li class="ellipsis">...</li>
+                                <li class="aj"><a href="javascript:void(0);" data-page="{{ paginate.pages }}"
+                                                  data-href="{{ url_for('book_detail') }}">{{ paginate.pages }}</a>
+                                </li>
+                            {% endif %}
 
-                            <li class="aj">
-                                <a {% if current_page!=total_page %}href="#page{{ current_page + 1 }}"
-                                   data-id="page{{ current_page + 1 }}"
-                                   data-href="{{ url_for('admin_comments_view',page = current_page + 1) }}"{% endif %}
+                            <li class="ajPage">
+                                <a {% if paginate.has_next %}href="javascript:void(0);"
+                                   data-page="{{ paginate.next_num }}"
+                                   data-href="{{ url_for('book_detail',page = paginate.page + 1) }}"{% endif %}
                                    aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
@@ -58,9 +77,17 @@
             {% endfor %}
         </div>
         <div class="modal-footer">
+            {# 如果已登录 显示 评论框 #}
+            {% if user %}
+                <form id="">
+                    <div class="form-group">
+                        <textarea id="comment_content" rows="5" class="form-control" placeholder="请输入评论内容"></textarea>
+                    </div>
+                </form>
+            {% endif %}
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             <button id="submit_btn" type="button" class="btn btn-primary"
-                    data-url="{{ url_for('order_update', order_id=1) }}">修改
+                    data-url="{{ url_for('comment_reply') }}">评论
             </button>
         </div>
     </div>

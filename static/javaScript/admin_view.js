@@ -2,9 +2,29 @@ $(function () {
 
     // 显示 订单详情 模态框
     $('tbody tr th a').click(function () {
-        let url = $(this).attr('href');
+        let url = $(this).data('url');
+        let book_id = $(this).data('book_id');
+        let comment_id = $(this).data('comment_id');
         $('#exampleModal').on('show.bs.modal', function () {
-            $(this).load(url);
+            if (url) {
+                if (comment_id) {
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {
+                            book_id: book_id,
+                            comment_id: comment_id
+                        },
+                        dataType: 'html',
+                        success: function (data) {//返回数据根据结果进行相应的处理
+                            $(this).html(data);
+                        },
+                        error: function () {
+                            alert('error');
+                        }
+                    });
+                } else $(this).load(url);
+            }
             // var button = $(event.relatedTarget) // Button that triggered the modal
             // var recipient = button.data('whatever') // Extract info from data-* attributes
             // // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
@@ -15,27 +35,28 @@ $(function () {
         });
     });
 
-    // 管理员 点击评论 显示 图书详情 定位到该评论 模态框
-    $("div.main-div").on("click", "blockquote a", function () {
+    // 管理员 点击评论|图书 显示 图书详情 定位到该评论 模态框
+    $("div.main-div").off('click', '.show_modal a').on("click", ".show_modal a", function () {
         let url = $(this).data('url');
         let book_id = $(this).data("book_id");
         let comment_id = $(this).data('comment_id');
-        $('#modal-comment-book').on('show.bs.modal', function () {
-            $.ajax({
-                type: "POST",
-                url: url,
-                data:{
-                    book_id:book_id,
-                    comment_id:comment_id
-                },
-                dataType:'html',
-                success: function (data) {//返回数据根据结果进行相应的处理
-                    $("#modal-comment-book").html(data);
-                },
-                error: function () {
-                    alert('error');
-                }
-            });
+        $('.modal-book-detail:first').off('show.bs.modal').on('show.bs.modal', function () {
+            if (url)
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        book_id: book_id,
+                        comment_id: comment_id
+                    },
+                    dataType: 'html',
+                    success: function (data) {//返回数据根据结果进行相应的处理
+                        $(".modal-book-detail:first").html(data);
+                    },
+                    error: function () {
+                        alert('error');
+                    }
+                });
         });
     });
 });
