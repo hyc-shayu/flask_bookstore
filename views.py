@@ -182,8 +182,8 @@ def book_classify_update():
 
 
 # 获取图书列表
-@app.route('/admin/get_books_<int:book_classify_id>_<int:page>',methods=['POST'])
-@app.route('/admin/get_books_<int:book_classify_id>',methods=['POST'])
+@app.route('/admin/get_books_<int:book_classify_id>_<int:page>',methods=['GET', 'POST'])
+@app.route('/admin/get_books_<int:book_classify_id>',methods=['GET', 'POST'])
 def get_books_list(book_classify_id,page=1):
     paginate = Book.query.filter(Book.book_classify_id== book_classify_id).paginate(page, PAGE_SIZE, False)
     return render_template('admin_books_list.html', paginate=paginate)
