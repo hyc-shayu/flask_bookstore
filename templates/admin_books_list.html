@@ -1,0 +1,19 @@
+{% import '_macros.html' as macros %}
+{% for book in paginate.items %}
+    {% if loop.first %}
+        <ul class="list-group">
+    {% endif %}
+<li class="list-group-item">
+    <a href="javascript:;">{{ book.name }}</a>
+    <span class="badge pull-right">{{ book.comments|length }}</span>
+    <a class="btn btn-xs pull-right">删除</a>
+    <a class="btn btn-xs pull-right">修改</a>
+</li>
+{% if loop.last %}
+    </ul>
+    <ul>
+        {{ macros.pagination_widget(paginate,'get_books_list',book_classify_id=book.book_classify_id) }}
+    </ul>
+{% endif %}
+{% endfor %}
+

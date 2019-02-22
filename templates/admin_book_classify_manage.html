@@ -1,40 +1,83 @@
-<div class="container show_modal">
+<div class="show_modal">
+
+    {% for book_classify in paginate.items %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" class="open-list"
+                       href="#collapse_classify_{{ book_classify.id }}" data-url="{{ url_for('get_books_list',book_classify_id=book_classify.id) }}">
+                        {{ book_classify.name }}
+                    </a>
+                    <span class="badge pull-right">{{ book_classify.books|length }}</span>
+                    <a class="btn pull-right" data-toggle="modal" style="margin-right: 20px;padding: 0px 25px;"
+                       data-target="#modal-book_classify-del" data-classify_id="">删除</a>
+                    <a class="btn pull-right" data-toggle="modal" onclick="set_modal(this)"
+                       data-name="" style="padding: 0px 25px;"
+                       data-target="#modal-book_classify-add_or_update">修改</a>
+                </h4>
+            </div>
+            <div id="collapse_classify_{{ book_classify.id }}" class="panel-collapse collapse">
+                <div class="panel-body">
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
     <table class="table table-hover">
         <tbody>
         {% for book_classify in paginate.items %}
             <tr>
                 <th scope="row">{{ book_classify.name }}</th>
-                <td><a href="javascript:void(0);" onclick="setModal()" class="btn pull-right" data-toggle="modal"
-                       data-target="#modal-book_classify-del">删除</a>
-                    <a href="javascript:void(0);" class="btn pull-right" data-toggle="modal"
-                       data-target="#modal-book_classify-add_or_update">修改</a></td>
+                <td><a class="btn pull-right" data-toggle="modal"
+                       data-target="#modal-book_classify-del" data-classify_id="{{ book_classify.id }}">删除</a>
+                    <a class="btn pull-right" data-toggle="modal" onclick="set_modal(this)"
+                       data-name="{{ book_classify.name }}"
+                       data-target="#modal-book_classify-add_or_update">修改</a>
+                    <a class="btn pull-right">查看图书列表</a>
+                </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-    <a href="javascript:void(0);" class="btn btn-primary pull-right" data-toggle="modal"
+    <a class="btn btn-primary pull-right" data-toggle="modal" onclick="set_modal(this)"
        data-target="#modal-book_classify-add_or_update">增加图书分类
     </a>
 </div>
-{#    添加更新图书分类的模态框 #}
+{# 查看图书列表 #}
+<div class="modal fade" id="modal-book_classify-del" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h4 class="text-center">删除图书分类将会删除该分类下面的所有图书信息<br/>确定要删除吗？</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+{#    添加&更新图书分类的模态框 #}
 <div class="modal fade" id="modal-book_classify-add_or_update" tabindex="-1" role="dialog"
      aria-labelledby="exampleModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="exampleModalLabel"></h4>
+                <h4 class="modal-title" id="exampleModalLabel">增加图书分类</h4>
             </div>
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="message-text" class="control-label">Message:</label>
+                        <label for="message-text" class="control-label">图书分类名称：</label>
                         <textarea class="form-control" id="message-text"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Send message</button>
+                <button type="button" class="btn btn-primary">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
@@ -54,4 +97,16 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div>
+
+<script type="text/javascript">
+    function set_modal(obj) {
+        let title = $(obj).text();
+        $("#modal-book_classify-add_or_update h4").text(title);
+        let name = $(obj).data('name');
+        if (!name)
+            name = '';
+        $("#modal-book_classify-add_or_update #message-text").text(name);
+    }
+
+</script>
 

@@ -181,6 +181,14 @@ def book_classify_update():
     return ''
 
 
+# 获取图书列表
+@app.route('/admin/get_books_<int:book_classify_id>_<int:page>',methods=['POST'])
+@app.route('/admin/get_books_<int:book_classify_id>',methods=['POST'])
+def get_books_list(book_classify_id,page=1):
+    paginate = Book.query.filter(Book.book_classify_id== book_classify_id).paginate(page, PAGE_SIZE, False)
+    return render_template('admin_books_list.html', paginate=paginate)
+
+
 # 评论查看页面——局部刷新
 @app.route('/admin/comments_manage_<int:page>')
 @app.route('/admin/comments_manage')
