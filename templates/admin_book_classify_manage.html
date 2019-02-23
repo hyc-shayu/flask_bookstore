@@ -3,21 +3,25 @@
     <div class="panel panel-default">
         {% for book_classify in paginate.items %}
             <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" class="open-list"
-                       href="#collapse_classify_{{ book_classify.id }}"
-                       data-url="{{ url_for('get_books_list',book_classify_id=book_classify.id) }}">
-                        {{ book_classify.name }}
-                    </a>
-                    <span class="badge pull-right">{{ book_classify.books|length }}</span>
-                    <a class="btn pull-right" data-toggle="modal" style="margin-right: 20px;padding: 0px 25px;"
-                       data-target="#modal-book_classify-del" data-classify_id="{{ book_classify.id }}"
-                        data-url="{{ url_for('book_classify_del',book_classify_id=book_classify.id) }}">删除</a>
-                    <a class="btn pull-right" data-toggle="modal" onclick="set_modal(this)"
-                       data-name="{{ book_classify.name }}" data-classify_id="{{ book_classify.id }}" style="padding: 0px 25px;"
-                       data-target="#modal-book_classify-add_or_update"
-                       data-url="{{ url_for('book_classify_update',book_classify_id=book_classify.id) }}">修改</a>
-                </h4>
+                <li class="list-group-item">
+                    <h4 class="panel-title">
+
+                        <a data-toggle="collapse" data-parent="#accordion" class="open-list"
+                           href="#collapse_classify_{{ book_classify.id }}"
+                           data-url="{{ url_for('get_books_list',book_classify_id=book_classify.id) }}">
+                            {{ book_classify.name }}
+                        </a>
+                        <span class="badge pull-right">{{ book_classify.books|length }}</span>
+                        <a class="btn pull-right opt_classify_del_book_a" data-toggle="modal"
+                           style="margin-right: 20px;padding: 0px 25px;"
+                           data-target="#modal-book_classify-del"
+                           data-url="{{ url_for('book_classify_del',book_classify_id=book_classify.id) }}">删除</a>
+                        <a class="btn pull-right opt_classify_del_book_a" data-toggle="modal" onclick="set_modal(this)"
+                           data-name="{{ book_classify.name }}" style="padding: 0px 25px;"
+                           data-target="#modal-book_classify-add_or_update"
+                           data-url="{{ url_for('book_classify_update',book_classify_id=book_classify.id) }}">修改</a>
+                    </h4>
+                </li>
             </div>
             <div id="collapse_classify_{{ book_classify.id }}" class="panel-collapse collapse">
                 <div class="panel-body pagination-fill-div">
@@ -25,11 +29,17 @@
             </div>
         {% endfor %}
     </div>
-    <a class="btn btn-primary pull-right add_update_classify_a" data-toggle="modal" onclick="set_modal(this)" style="margin-top: 20px;"
-       data-target="#modal-book_classify-add_or_update">增加图书分类
+    <a class="btn btn-primary pull-right opt_classify_del_book_a" data-toggle="modal" onclick="set_modal(this)"
+       style="margin-top: 20px;"
+       data-target="#modal-book_classify-add_or_update" data-url="{{ url_for('book_classify_add') }}"
+    >添加图书分类
     </a>
-    <ul">
-        {{ macros.pagination_widget(paginate,'book_classify_manage') }}
+    <a class="btn pull-right opt_book_a" style="margin-top: 20px;" data-toggle="modal"
+       data-target="#modal-book_add_or_update" data-url="{{ url_for('add_book') }}"
+    >添加图书
+    </a>
+    <ul>
+    {{ macros.pagination_widget(paginate,'book_classify_manage') }}
     </ul>
 </div>
 
@@ -39,7 +49,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h4 class="text-center">删除图书分类将会删除该分类下面的所有图书信息<br/>确定要删除吗？</h4>
+                <h4 class="text-center">将会删除所选项的<span></span>所有信息<br/><br/>确定要删除吗？</h4>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary classify_sure_btn" data-dismiss="modal">确定</button>
@@ -55,7 +65,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="exampleModalLabel">增加图书分类</h4>
+                <h4 class="modal-title" id="exampleModalLabel"></h4>
             </div>
             <div class="modal-body">
                 <form>
@@ -66,11 +76,15 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary classify_sure_btn">确定</button>
+                <button type="button" class="btn btn-primary classify_sure_btn" data-dismiss="modal">确定</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
+</div>
+{# 添加修改图书模态框 #}
+<div class="modal fade" id="modal-book_add_or_update" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel">
 </div>
 
 <script type="text/javascript">

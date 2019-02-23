@@ -61,20 +61,19 @@ $(function () {
         });
     });
 
-    //管理员修改增加图书分类 - 模态框
-    $("div.main").off('click', '.add_update_classify_a').on('click', '.add_update_classify_a', function () {
+    //管理员修改增加删除图书分类 删除图书 按钮 - 模态框
+    $("div.main").off('click', '.opt_classify_del_book_a').on('click', '.opt_classify_del_book_a', function () {
         let url = $(this).data('url');
-        let classify_id = $(this).data("classify_id");
         let sel = $(this).data("target");
         $(sel).off('show.bs.modal').on('show.bs.modal', function () {
             $(this).find('.classify_sure_btn:first').off('click').on('click', function () {
+                let name = $(sel).find('#message-text').val();
                 $.ajax({
                     type: 'POST',
                     url: url,
-                    dataType: 'html',
-                    success: function (callback_data) {
-                        $(panel_body).html(callback_data);
-                        //append_content(panel_body,books);
+                    data: {name: name},
+                    success: function () {
+                        reflash_main_div();
                     },
                     error: function () {
                         alert('发生一个错误');
@@ -82,7 +81,43 @@ $(function () {
                 })
             });
         });
-    })
+    });
+
+    //管理员修改添加图书 模态框
+    $("div.main").off('click', '.opt_book_a').on('click', '.opt_book_a', function () {
+        let url = $(this).data('url');
+        let book_id = $(this).data('book_id');
+        let sel = $(this).data('target');
+        $(sel).off('show.bs.modal').on('show.bs.modal', function () {
+            $.ajax({
+                async: false,
+                type: "POST",
+                url: 'opt_book_modal',
+                data: {book_id: book_id},
+                dataType: 'html',
+                success: function (data) {
+                    $(sel).html(data);
+                },
+                error: function () {
+                    alert('发生一个错误');
+                }
+            })
+            $(this).find('.book_sure_btn:first').off('click').on('click', function () {
+                let book_classify_id = $(sel).find('select:first').val();
+                let book_name = $(sel).find('#book-name').val();
+                let quantity = $(sel).find('#book-quantity').val();
+                let price = $(sel).find('#book-price').val();
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {book_classify_id: book_classify_id, book_name: book_name, quantity: quantity, price: price},
+                    success: function () {
+                        reflash_main_div();
+                    }
+                })
+            })
+        });
+    });
 
     //管理员点开图书列表
     $("div.main-div").off("click", 'a.open-list').on("click", 'a.open-list', function () {
@@ -92,6 +127,13 @@ $(function () {
         append_ajax(panel_body, url);
     });
 });
+
+//刷新div.main
+function reflash_main_div() {
+    let url = $('div.left .aj .active:first').data('href');
+    if (url)
+        $('div.main').load(url);
+}
 
 //ajax请求 刷新下拉列表？
 function append_ajax(panel_body, s_url, page) {

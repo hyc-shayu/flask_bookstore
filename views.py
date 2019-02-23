@@ -1,5 +1,6 @@
 from app import app
 from flask import request, render_template, redirect, url_for, session, flash, jsonify
+from sqlalchemy import or_
 
 from forms import *
 from models import *
@@ -116,10 +117,11 @@ def admin_view():
         comments_new_count = len(comments_new)
         comments_new = comments_new[0:PAGE_SIZE]
         return render_template('admin.html', orders_paid=orders_paid, orders_apply_return=orders_apply_return,
-                               comments_new=comments_new, orders_apply_return_count=orders_apply_return_count, orders_paid_count=orders_paid_count,
+                               comments_new=comments_new, orders_apply_return_count=orders_apply_return_count,
+                               orders_paid_count=orders_paid_count,
                                comments_new_count=comments_new_count)
     else:
-        return render_template('admin.html')
+        return '404'
 
 
 # 查询订单——管理员首页 表格链接
@@ -166,27 +168,73 @@ def book_classify_add():
 @app.route('/admin/book_classify_del_<book_classify_id>', methods=['POST'])
 def book_classify_del(book_classify_id):
     book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
-    db.session.remove(book_classify)
+    db.session.delete(book_classify)
     db.session.commit()
     return ''
 
 
 # 修改图书分类-模态框
-@app.route('/admin/book_classify_update', methods=["POST"])
-def book_classify_update():
-    book_classify_id = request.form.get('book_classify_id')
-    book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id)
+@app.route('/admin/book_classify_update_<int:book_classify_id>', methods=["POST"])
+def book_classify_update(book_classify_id):
+    book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
     book_classify.name = request.form.get("name")
     db.session.commit()
     return ''
 
 
 # 获取图书列表
-@app.route('/admin/get_books_<int:book_classify_id>_<int:page>',methods=['GET', 'POST'])
-@app.route('/admin/get_books_<int:book_classify_id>',methods=['GET', 'POST'])
-def get_books_list(book_classify_id,page=1):
-    paginate = Book.query.filter(Book.book_classify_id== book_classify_id).paginate(page, PAGE_SIZE, False)
+@app.route('/admin/get_books_<int:book_classify_id>_<int:page>', methods=['GET', 'POST'])
+@app.route('/admin/get_books_<int:book_classify_id>', methods=['GET', 'POST'])
+def get_books_list(book_classify_id, page=1):
+    paginate = Book.query.filter(Book.book_classify_id == book_classify_id).paginate(page, PAGE_SIZE, False)
     return render_template('admin_books_list.html', paginate=paginate)
+
+
+# 查看 添加&修改图书页面
+@app.route('/admin/opt_book_modal', methods=['POST'])
+def opt_book_modal():
+    book_classifies = BookClassify.query.all()
+    book_id = request.form.get('book_id')
+    book = Book.query.filter(Book.id == book_id).one_or_none() if book_id else None
+    return render_template('opt_book_modal.html', book=book, book_classifies=book_classifies)
+
+
+# 增加图书
+@app.route('/admin/add_book', methods=['POST'])
+def add_book():
+    book_classify_id = request.form.get('book_classify_id')
+    book_name = request.form.get('book_name')
+    quantity = request.form.get('quantity')
+    price = request.form.get('price')
+    book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price)
+    db.session.add(book)
+    db.session.commit()
+    return ''
+
+
+# 修改图书
+@app.route('/admin/update_book_<int:book_id>', methods=['POST'])
+def update_book(book_id):
+    book_classify_id = request.form.get('book_classify_id')
+    book_name = request.form.get('book_name')
+    quantity = request.form.get('quantity')
+    price = request.form.get('price')
+    book = Book.query.filter(Book.id == book_id).one()
+    book.book_classify_id = book_classify_id
+    book.name = book_name
+    book.quantity = quantity
+    book.price = price
+    db.session.commit()
+    return ''
+
+
+# 删除图书
+@app.route('/admin/del_book_<int:book_id>', methods=['POST'])
+def del_book(book_id):
+    book = Book.query.filter(Book.id == book_id).one()
+    db.session.delete(book)
+    db.session.commit()
+    return ''
 
 
 # 评论查看页面——局部刷新
@@ -197,19 +245,46 @@ def admin_comments_view(page=1):
     return render_template('admin_comments_view.html', paginate=paginate)
 
 
-# 图书评论-按书分类显示评论——局部刷新
-@app.route('/admin/comments_manage_by_book_<int:page>')
-@app.route('/admin/comments_manage_by_book')
+# 查看图书——局部刷新
+@app.route('/admin/comments_manage_by_book_<int:page>', methods=['GET', 'POST'])
+@app.route('/admin/comments_manage_by_book', methods=['GET', 'POST'])
 def admin_comments_manage_by_book(page=1):
     paginate = Book.query.paginate(page, PAGE_SIZE, False)
     return render_template('admin_comments_book.html', paginate=paginate)
+
+
+# 管理员 搜索  图书|图书分类|订单
+@app.route('/admin/query_<query_type>_<query_str>_<int:page>', methods=['GET', 'POST'])
+@app.route('/admin/query_<query_type>_<query_str>', methods=['GET', 'POST'])
+@app.route('/admin/query', methods=['GET', 'POST'])
+def admin_query(query_type='', query_str='', page=1):
+    if query_str == '':
+        query_type = request.args.get('search_type')
+        query_str = request.args.get('search_str')
+    try:
+        str_to_int = int(query_str)
+    except ValueError and TypeError:
+        str_to_int = -1;
+    if query_type == 'order':
+        pass
+    elif query_type == 'book':
+        paginate = Book.query.filter(or_(Book.name.like('%' + query_str + '%'), Book.id == int(str_to_int))).paginate(
+            page, PAGE_SIZE, False)
+        return render_template('admin_query.html',
+                               url=url_for('admin_query', query_type=query_type, query_str=query_str,
+                                           page=paginate.page), paginate=paginate)
+    elif query_type == 'book_classify':
+        pass
+    else:
+        flash('404')
+        return '404'
 
 
 # 图书详情-模态框ajax
 @app.route('/admin/book_detail_<int:book_id>_<int:page>', methods=['POST'])
 @app.route('/admin/book_detail_<int:book_id>', methods=['POST'])
 @app.route('/admin/book_detail', methods=['POST'])
-def book_detail(book_id=-1,page=1):
+def book_detail(book_id=-1, page=1):
     comment_id = request.form.get('comment_id')
     get_page = request.form.get('page')
     if book_id == -1:
@@ -221,7 +296,7 @@ def book_detail(book_id=-1,page=1):
         comments = comment_query.order_by(Comment.publish_time.desc()).all()
         comment = comment_query.filter(Comment.id == comment_id).one()
         index = comments.index(comment)
-        page = int(index/PAGE_SIZE)+1
+        page = int(index / PAGE_SIZE) + 1
 
     paginate = comment_query.order_by(Comment.publish_time.desc()).paginate(int(page), PAGE_SIZE, False)
     comments_list = paginate.items
@@ -240,7 +315,8 @@ def comment_reply():
     target_id = request.form.get('target_id')
     author = get_user()
     content = request.form.get('content')
-    comment = Comment(admin_check=author.admin, from_user_id=author.id, to_user_id=target_id, book_id=book_id, content=content)
+    comment = Comment(admin_check=author.admin, from_user_id=author.id, to_user_id=target_id, book_id=book_id,
+                      content=content)
     db.session.add(comment)
     db.session.commit()
     return jsonify()

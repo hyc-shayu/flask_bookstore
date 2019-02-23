@@ -19,5 +19,7 @@ $(function () {
        let url = $(this).data('url');
        $(this).parents("div.pagination-fill-div:first").load(url);
     });
+
+
 });
 

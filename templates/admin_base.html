@@ -46,16 +46,16 @@
                         class="glyphicon glyphicon-home"
                         aria-hidden="true"></span>首页-管理员 </a></li>
             </ul>
-            <form class="navbar-form navbar-left" method="post">
+            <form class="navbar-form navbar-left" action="{{ url_for('admin_query') }}">
                 <div class="form-group">
                     <select class="form-control" name="search_type">
                         <option value="order">订单</option>
                         <option value="book">图书</option>
                         <option value="book_classify">图书分类</option>
                     </select>
-                    <input type="text" name="search" class="form-control" placeholder="请输入">
+                    <input type="text" name="search_str" class="form-control" placeholder="请输入">
                 </div>
-                <button type="submit" class="btn btn-default">查找</button>
+                <button type="submit" class="btn btn-default btn-search">查找</button>
             </form>
             <ul class="nav navbar-nav navbar-right">
                 <li class="base-active nav-active"><a href="/admin{{ url_for('personal_information') }}">{{ user.username }}</a>
@@ -69,11 +69,10 @@
     <div class="container left pull-left">
         {% block left %}
             <ul class="nav nav-pills nav-stacked">
-                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('book_classify_manage') }}">图书分类管理</a></li>
-                <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">图书管理</a></li>
+                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('book_classify_manage') }}">图书管理</a></li>
                 <li role="presentation" class="base-active active aj"><a href="{{ url_for('index') }}">订单管理</a></li>
                 <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_view') }}">查看所有评论</a></li>
-                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_manage_by_book') }}">查看图书评论</a></li>
+                <li role="presentation" class="base-active active aj"><a href="javascript:void(0);" data-href="{{ url_for('admin_comments_manage_by_book') }}">查看所有图书</a></li>
             </ul>
         {% endblock %}
     </div>
