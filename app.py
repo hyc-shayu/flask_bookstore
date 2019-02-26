@@ -43,9 +43,3 @@ def initdb(drop):
     db.session.commit()
     click.echo('Initialized database.')
 
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-

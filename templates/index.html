@@ -1,37 +1,33 @@
 {% extends 'base.html' %}
 {% block title %}首页{% endblock %}
-{% block main %}
-    <div class="row">
-        <div class="col-sm-6 col-md-4">
-            <div class="thumbnail">
-                <img src="" alt="" style="height: 200px; width: 100%; display: block;">
-                <div class="caption">
-                    <h3>Thumbnail label</h3>
-                    <p><a href="#" class="btn btn-primary" role="button">购买</a>
-                        <a href="#" class="btn btn-default" role="button">加入购物车</a></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-4">
-            <div class="thumbnail">
-                <img src="" alt="" style="height: 200px; width: 100%; display: block;">
-                <div class="caption">
-                    <h3>Thumbnail label</h3>
-                    <p><a href="#" class="btn btn-primary" role="button">购买</a>
-                        <a href="#" class="btn btn-default" role="button">加入购物车</a></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-4">
-            <div class="thumbnail">
-                <img src="" alt="" style="height: 200px; width: 100%; display: block;">
-                <div class="caption">
-                    <h3>Thumbnail label</h3>
-                    <p><a href="#" class="btn btn-primary" role="button">购买</a>
-                        <a href="#" class="btn btn-default" role="button">加入购物车</a></p>
-                </div>
-            </div>
-        </div>
 
-    </div>
+{% block left %}
+        {% for classify in paginate.items %}
+            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">{{ classify.name }}</a></li>
+        {% endfor %}
+{% endblock %}
+
+{% block main %}
+    {% for classify in paginate.items %}
+        {% if classify.books|length > 0 %}
+            <div class="row">
+                {% for book in classify.books[0:8] %}
+                    {% if loop.first %}
+                        <h2 style="margin-left: 20px">{{ classify.name }}</h2>
+                    {% endif %}
+                    <div class="col-sm-6 col-md-3">
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                                 style="height: 200px; width: 100%; display: block;">
+                            <div class="caption">
+                                <h3>{{ book.name }}</h3>
+                                <p><a href="#" class="btn btn-primary" role="button">购买</a>
+                                    <a href="#" class="btn btn-default" role="button">加入购物车</a></p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
 {% endblock %}

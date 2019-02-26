@@ -38,9 +38,11 @@
        data-target="#modal-book_add_or_update" data-url="{{ url_for('add_book') }}"
     >添加图书
     </a>
+    {% block page %}
     <ul>
-    {{ macros.pagination_widget(paginate,'book_classify_manage') }}
+        {{ macros.pagination_widget(paginate,'book_classify_manage') }}
     </ul>
+    {% endblock %}
 </div>
 
 {# 删除图书分类 #}

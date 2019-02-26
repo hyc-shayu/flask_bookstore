@@ -133,6 +133,8 @@ function reflash_main_div() {
     let url = $('div.left .aj .active:first').data('href');
     if (url)
         $('div.main').load(url);
+    else
+        window.location.reload();
 }
 
 //ajax请求 刷新下拉列表？

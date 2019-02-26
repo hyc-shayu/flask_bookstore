@@ -34,3 +34,67 @@
         </li>
     </ul>
 {% endmacro %}
+
+{% macro pagination_data_url_page(pagination, endpoint) %}
+    <ul class="pagination">
+        <li{% if not pagination.has_prev %} class="disabled"{% endif %}>
+            <a href="javascript:;"
+               {% if pagination.has_prev %}data-url="{{ endpoint }}?page={{ pagination.page - 1 }}"
+               {% endif %}>&laquo;</a>
+        </li>
+
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+                {% if p == pagination.page %}
+                    <li class="active">
+                        <a href="javascript:;">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="javascript:;" data-url="{{ endpoint }}?page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="disabled">
+                    <a href="#">&hellip;</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        <li{% if not pagination.has_next %} class="disabled"{% endif %}>
+            <a href="javascript:;"
+               {% if pagination.has_next %}data-url="{{ endpoint }}?page={{ pagination.page + 1 }}"{% endif %}>&raquo;</a>
+        </li>
+    </ul>
+{% endmacro %}
+
+{% macro pagination_widget_href_get(pagination, endpoint) %}
+    <ul class="pagination">
+        <li{% if not pagination.has_prev %} class="disabled"{% endif %}>
+            <a href="{% if pagination.has_prev %}{{ endpoint }}?page={{ pagination.page - 1 }}
+                    {% else %}#{% endif %}">&laquo;
+            </a>
+        </li>
+
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+                {% if p == pagination.page %}
+                    <li class="active">
+                        <a href="javascript:;">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ endpoint }}?page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="disabled">
+                    <a href="#">&hellip;</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        <li{% if not pagination.has_next %} class="disabled"{% endif %}>
+            <a href="{% if pagination.has_next %}{{ endpoint }}?page={{ pagination.page + 1 }}{% else %}
+                javascript:;{% endif %}">&raquo;</a>
+        </li>
+    </ul>
+{% endmacro %}

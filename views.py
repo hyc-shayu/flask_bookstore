@@ -6,7 +6,13 @@ from forms import *
 from models import *
 
 USER_ID = 'user_id'
-PAGE_SIZE = 10
+PAGE_SIZE = 12
+
+
+@app.route('/')
+def index():
+    paginate = BookClassify.query.paginate(1, PAGE_SIZE, False)
+    return render_template('index.html', paginate=paginate)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -254,27 +260,35 @@ def admin_comments_manage_by_book(page=1):
 
 
 # 管理员 搜索  图书|图书分类|订单
-@app.route('/admin/query_<query_type>_<query_str>_<int:page>', methods=['GET', 'POST'])
-@app.route('/admin/query_<query_type>_<query_str>', methods=['GET', 'POST'])
-@app.route('/admin/query', methods=['GET', 'POST'])
-def admin_query(query_type='', query_str='', page=1):
+@app.route('/admin/query_<query_type>_<query_str>')
+@app.route('/admin/query')
+def admin_query(query_type='', query_str=''):
+    page = request.args.get('page')
+    if not page:
+        page = 1
+    try:
+        page = int(page)
+    except ValueError or TypeError:
+        page = 1
     if query_str == '':
         query_type = request.args.get('search_type')
         query_str = request.args.get('search_str')
     try:
         str_to_int = int(query_str)
-    except ValueError and TypeError:
-        str_to_int = -1;
+    except ValueError or TypeError:
+        str_to_int = -1
+    url=url_for('admin_query', query_type=query_type, query_str=query_str)
     if query_type == 'order':
         pass
     elif query_type == 'book':
         paginate = Book.query.filter(or_(Book.name.like('%' + query_str + '%'), Book.id == int(str_to_int))).paginate(
             page, PAGE_SIZE, False)
-        return render_template('admin_query.html',
-                               url=url_for('admin_query', query_type=query_type, query_str=query_str,
-                                           page=paginate.page), paginate=paginate)
+        return render_template('admin_query.html', url=url,
+                               paginate=paginate)
     elif query_type == 'book_classify':
-        pass
+        paginate = BookClassify.query.filter(
+            or_(BookClassify.name.like('%' + query_str + '%'), BookClassify.id == int(str_to_int))).paginate(page, PAGE_SIZE, False)
+        return render_template('admin_query.html', paginate=paginate, url=url)
     else:
         flash('404')
         return '404'

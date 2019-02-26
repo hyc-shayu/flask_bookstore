@@ -19,59 +19,104 @@
         alert('{{ get_flashed_messages()|first }}')
     })</script>
 {% endif %}
-    <nav class="navbar navbar-default">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ url_for('index') }}">图书商城</a>
+<nav class="navbar navbar-default">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('index') }}">图书商城</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="base-active nav-active"><a href="{{ url_for('index') }}"><span
+                        class="glyphicon glyphicon-home"
+                        aria-hidden="true"></span>首页 </a></li>
+                <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user %}
+                    <li class="base-active nav-active"><a
+                            href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
+                    <li class="base-active nav-active"><a href="{{ url_for('logout') }}">注销</a></li>
+                {% else %}
+                    <li class="base-active nav-active"><a href="{{ url_for('login') }}">登录</a></li>
+                    <li class="base-active nav-active"><a href="{{ url_for('register') }}">注册</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+{% block carousel %}
+    <div class="container">
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+            <!-- Indicators -->
+            <ol class="carousel-indicators">
+                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+            </ol>
+
+            <!-- Wrapper for slides -->
+            <div class="carousel-inner center-block" role="listbox" style="height: 300px;width: 60%">
+                <div class="item active" align="center" style="height: 100%">
+                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
+                    <div class="carousel-caption">
+                        ...
+                    </div>
+                </div>
+                <div class="item" align="center" style="height: 100%">
+                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
+                    <div class="carousel-caption">
+                        ...
+                    </div>
+                </div>
+                <div class="item" align="center" style="height: 100%">
+                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
+                    <div class="carousel-caption">
+                        ...
+                    </div>
+                </div>
             </div>
 
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li class="base-active nav-active"><a href="{{ url_for('index') }}"><span
-                            class="glyphicon glyphicon-home"
-                            aria-hidden="true"></span>首页 </a></li>
-                    <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>
-                </ul>
-                <form class="navbar-form navbar-left" method="post">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search">
-                    </div>
-                    <button type="submit" class="btn btn-default">Submit</button>
-                </form>
-                <ul class="nav navbar-nav navbar-right">
-                    {% if user %}
-                        <li class="base-active nav-active"><a href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
-                        <li class="base-active nav-active"><a href="{{ url_for('logout') }}">注销</a></li>
-                    {% else %}
-                        <li class="base-active nav-active"><a href="{{ url_for('login') }}">登录</a></li>
-                        <li class="base-active nav-active"><a href="{{ url_for('register') }}">注册</a></li>
-                    {% endif %}
-                </ul>
-            </div><!-- /.navbar-collapse -->
-        </div><!-- /.container-fluid -->
-    </nav>
-    <div class="container base-center">
-        <div class="container left pull-left">
-            {% block left %}
-                <ul class="nav nav-pills nav-stacked">
-                    <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">Home</a></li>
-                    <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">Profile</a></li>
-                    <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">Messages</a></li>
-                </ul>
-            {% endblock %}
-        </div>
-        <div class="container main pull-left">
-            {% block main %}{% endblock %}
+            <!-- Controls -->
+            <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
         </div>
     </div>
+{% endblock %}
+<div class="container base-center" style="margin-top: 15px">
+    <div class="container left pull-left">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">新书排行</a></li>
+            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">畅销排行</a></li>
+            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">月销排行</a></li>
+            {% block left %}
+            {% endblock %}
+        </ul>
+    </div>
+    <div class="container main pull-left">
+        {% block main %}{% endblock %}
+    </div>
+</div>
 </body>
 </html>
