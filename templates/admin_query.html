@@ -1,12 +1,15 @@
 {% extends 'admin_base.html' %}
 {% block main %}
     <div class="pagination_query_div">
-        {% if paginate.items[0].uer_id %}
-            {% include 'admin_order_query.html' %}
-        {% elif paginate.items[0].book_classify_id %}
-            {% include 'admin_comments_book_query.html' %}
-        {% else %}
-            {% include 'admin_classify_query.html' %}
+        {% if paginate.items[0] %}
+
+            {% if paginate.items[0].uer_id %}
+                {% include 'admin_order_query.html' %}
+            {% elif paginate.items[0].book_classify_id %}
+                {% include 'admin_comments_book_query.html' %}
+            {% else %}
+                {% include 'admin_classify_query.html' %}
+            {% endif %}
         {% endif %}
     </div>
 {% endblock %}

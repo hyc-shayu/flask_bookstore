@@ -16,7 +16,9 @@
 {% endfor %}
 </div>
 {% block page %}
-    {{ macros.pagination_widget(paginate,'admin_comments_manage_by_book') }}
+    {% if paginate.items %}
+        {{ macros.pagination_widget(paginate,'admin_comments_manage_by_book') }}
+    {% endif %}
 {% endblock %}
 {#    模态框 #}
 <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"

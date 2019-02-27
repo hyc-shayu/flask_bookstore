@@ -3,8 +3,9 @@
     {% if loop.first %}
         <ul class="list-group">
     {% endif %}
-<li class="list-group-item">
-    <a href="javascript:;">{{ book.name }}</a>
+<li class="list-group-item show_modal">
+    <a href="javascript:;" data-toggle="modal" data-target="#modal-comment-book"
+               data-url="{{ url_for('book_detail',book_id=book.id) }}">{{ book.name }}</a>
     <span class="badge pull-right">{{ book.comments|length }}</span>
     <a class="btn btn-xs pull-right opt_classify_del_book_a" data-toggle="modal"
        data-target="#modal-book_classify-del" data-url="{{ url_for('del_book',book_id=book.id) }}">删除</a>
@@ -20,3 +21,7 @@
     </ul>
 {% endif %}
 {% endfor %}
+{#    模态框 #}
+<div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+     aria-labelledby="exampleModalLabel">
+</div>

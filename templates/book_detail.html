@@ -1,5 +1,5 @@
 <div class="modal-dialog book_detail_dialog" role="document" data-book_id="{{ book.id }}"
-     data-first_page="{{ url_for('book_detail') }}">
+     data-first_page="{{ request.path }}">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -37,7 +37,7 @@
                             <li class="ajPage">
                                 <a {% if paginate.has_prev %}href="javascript:void(0);"
                                    data-page="{{ paginate.prev_num }}"
-                                   data-href="{{ url_for('book_detail',page = paginate.prev_num) }}"{% endif %}
+                                   data-href="{{ url }}"{% endif %}
                                    aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
@@ -45,28 +45,28 @@
                             {% if paginate.pages<10 %}
                                 {% for page in range(paginate.pages) %}
                                     <li class="ajPage"><a href="javascript:void(0);" data-page="{{ page + 1 }}"
-                                                          data-href="{{ url_for('book_detail') }}">{{ page + 1 }}</a>
+                                                          data-href="{{ url }}">{{ page + 1 }}</a>
                                     </li>
                                 {% endfor %}
                             {% else %}
-                                <li class="aj"><a href="javascript:void(0);"data-page="1" data-href="{{ url_for('book_detail') }}">1</a>
+                                <li class="aj"><a href="javascript:void(0);" data-page="1" data-href="{{ url }}">1</a>
                                 </li>
                                 <li class="ellipsis">...</li>
                                 {% for page in range(paginate.page - 3,paginate.page + 4) %}
                                     <li class="aj"><a href="javascript:void(0);" data-page="{{ page }}"
-                                                      data-href="{{ url_for('book_detail') }}">{{ page }}</a>
+                                                      data-href="{{ url }}">{{ page }}</a>
                                     </li>
                                 {% endfor %}
                                 <li class="ellipsis">...</li>
                                 <li class="aj"><a href="javascript:void(0);" data-page="{{ paginate.pages }}"
-                                                  data-href="{{ url_for('book_detail') }}">{{ paginate.pages }}</a>
+                                                  data-href="{{ url }}">{{ paginate.pages }}</a>
                                 </li>
                             {% endif %}
 
                             <li class="ajPage">
                                 <a {% if paginate.has_next %}href="javascript:void(0);"
                                    data-page="{{ paginate.next_num }}"
-                                   data-href="{{ url_for('book_detail',page = paginate.page + 1) }}"{% endif %}
+                                   data-href="{{ url }}"{% endif %}
                                    aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
@@ -84,10 +84,10 @@
                         <textarea id="comment_content" rows="5" class="form-control" placeholder="请输入评论内容"></textarea>
                     </div>
                 </form>
+                <button id="submit_btn" type="button" class="btn btn-primary"
+                        data-url="{% if user.admin %}{{ url_for('comment_reply') }}{% else %}{{ url_for('user_comment') }}{% endif %}">评论
+                </button>
             {% endif %}
-            <button id="submit_btn" type="button" class="btn btn-primary"
-                    data-url="{{ url_for('comment_reply') }}">评论
-            </button>
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
         </div>
     </div>

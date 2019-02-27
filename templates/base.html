@@ -9,11 +9,13 @@
     <script src="{{ url_for('static',filename='javaScript/bootstrap.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}">
     <script src="{{ url_for('static',filename='javaScript/base.js') }}"></script>
+    <script src="{{ url_for('static',filename='javaScript/admin_base.js') }}"></script>
+    <script src="{{ url_for('static',filename='javaScript/admin_view.js') }}"></script>
     {% block head %}
     {% endblock %}
     {% from 'bootstrap/form.html' import render_form %}
 </head>
-<body>
+<body data-spy="scroll" data-target="#myScrollspy">
 {% if get_flashed_messages() %}
     <script type="text/javascript">$(function () {
         alert('{{ get_flashed_messages()|first }}')
@@ -39,18 +41,24 @@
                 <li class="base-active nav-active"><a href="{{ url_for('index') }}"><span
                         class="glyphicon glyphicon-home"
                         aria-hidden="true"></span>首页 </a></li>
-                <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>
+                {#                <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>#}
             </ul>
-            <form class="navbar-form navbar-left" method="post">
+            <form class="navbar-form navbar-left" action="{{ url_for('books_query') }}">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search">
+                    <input name="search_str" type="text" class="form-control" placeholder="请输入关键字">
                 </div>
-                <button type="submit" class="btn btn-default">Submit</button>
+                <button type="submit" class="btn btn-default">查找</button>
             </form>
             <ul class="nav navbar-nav navbar-right">
                 {% if user %}
                     <li class="base-active nav-active"><a
                             href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
+                    <li class="base-active nav-active"><a href="{{ url_for('register') }}">
+                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
+                        <span class="badge pull-right">{{ user.cart.cart_items|length }}</span>购物车</a></li>
+                    <li class="base-active nav-active"><a href="{{ url_for('register') }}">
+                        <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                        订单</a></li>
                     <li class="base-active nav-active"><a href="{{ url_for('logout') }}">注销</a></li>
                 {% else %}
                     <li class="base-active nav-active"><a href="{{ url_for('login') }}">登录</a></li>
@@ -60,6 +68,7 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
+{# 滚动荧幕 #}
 {% block carousel %}
     <div class="container">
         <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
@@ -104,12 +113,17 @@
         </div>
     </div>
 {% endblock %}
-<div class="container base-center" style="margin-top: 15px">
+<div class="container base-center main-div" style="margin-top: 15px">
     <div class="container left pull-left">
         <ul class="nav nav-pills nav-stacked">
-            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">新书排行</a></li>
+            <li role="presentation" class="base-active active"><a href="{{ url_for('rank_new_book') }}">新书排行</a></li>
             <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">畅销排行</a></li>
             <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">月销排行</a></li>
+            {% for classify in book_classifies %}
+                <li role="presentation" class="base-active active"><a
+                        href="{{ url_for('books_view_classify', book_classify_id=classify.id) }}">{{ classify.name }}</a>
+                </li>
+            {% endfor %}
             {% block left %}
             {% endblock %}
         </ul>
@@ -118,5 +132,12 @@
         {% block main %}{% endblock %}
     </div>
 </div>
+
+{% block book_madol %}
+    {#    模态框 #}
+    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+         aria-labelledby="exampleModalLabel">
+    </div>
+{% endblock %}
 </body>
 </html>

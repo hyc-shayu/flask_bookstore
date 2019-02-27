@@ -19,7 +19,7 @@ class PersonalForm(MyBaseForm):
     name = StringField('姓名', validators=[DataRequired()], render_kw={'placeholder': '姓名'})
     birthday = DateField('生日', validators=[DataRequired()], render_kw={'placeholder': '生日'})
     sex = RadioField('性别', choices=(('男', '男'), ('女', '女')), default='男')
-    submit = SubmitField('修改')
+    submit = SubmitField('修改信息')
 
 
 class UpdatePasswordForm(MyBaseForm):

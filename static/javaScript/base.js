@@ -62,3 +62,22 @@ function setTarget(target_user_id,target_user_username) {
     $("#comment_content").attr('placeholder', '回复 '+target_user_username);
     $('.modal-book-detail:first').animate({scrollTop: $('#comment_content').offset().top}, 500);
 }
+
+//修改添加地址按钮
+function opt_address(con) {
+    let title = $(con).text();
+    let id = $(con).data('id');
+    $('#modal-address').find('.modal-header:first h4').text(title);
+    if(id){
+        let inp = $(con).prev().find('input');
+        $('#adr_name').val(inp.eq(0).val());
+        $('#adr_phone').val(inp.eq(1).val());
+        $('#adr_address').val(inp.eq(2).val());
+        $("#adr_id").val(id);
+    }
+}
+
+//地址确定按钮
+function submit_address() {
+    $('#addressForm').submit();
+}
