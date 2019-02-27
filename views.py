@@ -8,12 +8,14 @@ from models import *
 USER_ID = 'user_id'
 PAGE_SIZE = 12
 BOOK_PAGE_SIZE = 20
+CLASSIFY_PAGE_SIZE = 5
 
 
 @app.route('/')
 def index():
     page = get_page()
-    paginate = BookClassify.query.filter(BookClassify.books).paginate(page, PAGE_SIZE, False)
+    paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id)\
+        .paginate(page, CLASSIFY_PAGE_SIZE, False)
     return render_template('index.html', paginate=paginate)
 
 
@@ -172,7 +174,36 @@ def update_password(form):
 
 
 # 添加到购物车
-def add_
+@app.route('/add_to_cart')
+def add_to_cart():
+    book_id = request.args.get('book_id')
+    user = get_user()
+    if user.cart:
+        cart_item = CartItem.query.filter(CartItem.cart_id == user.cart.id).filter(CartItem.book_id == book_id).one_or_none()
+    else:
+        user.cart = Cart(user_id=user.id)
+        cart_item = None
+    if cart_item:
+        cart_item.quantity += 1
+        cart_item.price += cart_item.book.price
+    else:
+        book = Book.query.filter(Book.id == book_id).one()
+        cart_item = CartItem(quantity=1, price=book.price, cart_id=user.cart.id, book_id=book_id)
+        db.session.add(cart_item)
+    user.cart.price += cart_item.book.price
+    db.session.commit()
+    flash('添加成功')
+    return redirect(request.referrer)
+
+
+# 查看购物车
+@app.route('/query_cart')
+def query_cart():
+    page = request.args.get('page')
+    if not page:
+        page = 1
+    cart = Cart.query.filter(Cart.user_id == get_user().id).one()
+    return render_template('cart.html', page=page, cart=cart)
 
 
 # 管理员界面 显示最新记录10条

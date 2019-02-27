@@ -67,6 +67,7 @@ class OrderItem(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order_table.id'))
 
 
+# 可以不需要购物车表
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     price = db.Column(db.Float, nullable=False, default=0)
