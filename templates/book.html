@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    <h2></h2>
+    {% if title %}
+        <h2>{{ title }}</h2>
+    {% endif %}
     <div class="row">
         {% for book in paginate.items %}
             <div class="col-sm-6 col-md-3">

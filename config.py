@@ -2,6 +2,7 @@ import os
 
 WTF_I18N_ENABLED = False
 DEBUG = True
+threaded = True
 
 SECRET_KEY = os.urandom(24)
 

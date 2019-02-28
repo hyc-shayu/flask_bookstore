@@ -52,11 +52,10 @@
     <div>
         <button class="btn btn-success pull-right" id="btn_buy">购买</button>
         <button class="btn pull-right" id="btn_check_all">全选</button>
-        <select class="form-control pull-left" id="sel_address">
+        <select class="form-control pull-left" id="sel_address" style="width: 80%;overflow: hidden">
             {% for recipient in user.recipients %}
                 <option value="{{ recipient.id }}">
-                    <p><strong>{{ recipient.address }}</strong>&emsp;&emsp;&emsp;{{ recipient.name }}&emsp;&emsp;&emsp;
-                        {{ recipient.phone }}</p>
+                    {{ recipient.address }}&emsp;&emsp;&emsp;&emsp;&emsp;{{ recipient.name }}&emsp;&emsp;&emsp;&emsp;{{ recipient.phone }}
                 </option>
             {% endfor %}
         </select>

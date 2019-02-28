@@ -15,7 +15,7 @@
     {% endblock %}
     {% from 'bootstrap/form.html' import render_form %}
 </head>
-<body>
+<body data-spy="scroll" data-target="#myScrollspy">
 {% if get_flashed_messages() %}
     <script type="text/javascript">$(function () {
         alert('{{ get_flashed_messages()|first }}')

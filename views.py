@@ -31,10 +31,11 @@ def rank_new_book():
 @app.route('/book_classify_<int:book_classify_id>')
 def books_view_classify(book_classify_id):
     page = get_page()
+    classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
     paginate = Book.query.filter(Book.book_classify_id == book_classify_id).paginate(page, BOOK_PAGE_SIZE, False)
     # 分页地址
     url = request.path
-    return render_template('book.html', paginate=paginate, url=url)
+    return render_template('book.html', paginate=paginate, url=url, title=classify.name)
 
 
 # 用户搜索图书
