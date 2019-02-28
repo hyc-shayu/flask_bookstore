@@ -186,24 +186,72 @@ def add_to_cart():
     if cart_item:
         cart_item.quantity += 1
         cart_item.price += cart_item.book.price
+        user.cart.price += cart_item.book.price
     else:
         book = Book.query.filter(Book.id == book_id).one()
         cart_item = CartItem(quantity=1, price=book.price, cart_id=user.cart.id, book_id=book_id)
         db.session.add(cart_item)
-    user.cart.price += cart_item.book.price
+        user.cart.price += book.price
     db.session.commit()
     flash('添加成功')
+    return redirect(request.referrer)
+
+
+# 删除购物车中的项
+@app.route('/delete_cart_item')
+def delete_cart_item():
+    item_id = request.args.get('item_id')
+    item = CartItem.query.filter(CartItem.id == item_id).one()
+    db.session.delete(item)
+    db.session.commit()
     return redirect(request.referrer)
 
 
 # 查看购物车
 @app.route('/query_cart')
 def query_cart():
-    page = request.args.get('page')
-    if not page:
-        page = 1
-    cart = Cart.query.filter(Cart.user_id == get_user().id).one()
-    return render_template('cart.html', page=page, cart=cart)
+    return render_template('cart.html')
+
+
+# 保存购物车信息
+@app.route('/save_cart', methods=['POST'])
+def save_cart():
+    items = request.json
+    cart_items = get_user().cart.cart_items
+    for k,value in items.items():
+        for item in cart_items:
+            if item.id == int(k):
+                item.quantity = int(value)
+                item.price = item.book.price * item.quantity
+                break
+    db.session.commit()
+    return ''
+
+
+# 创建订单
+@app.route("/create_order", methods=['POST'])
+def create_order():
+    item_id_list = request.json.get('item_list')
+    # 地址
+    recipient_id = request.json.get('recipient_id')
+    recipient = Recipient.query.filter(Recipient.id == recipient_id).one()
+    user = get_user()
+    try:
+        order = OrderTable(user_id=user.id, recipient_id=recipient_id, name=recipient.name,phone=recipient.phone,address=recipient.address)
+        db.session.add(order)
+        db.session.commit()
+        for item_id in item_id_list:
+            cart_item = CartItem.query.filter(CartItem.id == item_id).one()
+            order_item = OrderItem(quantity=cart_item.quantity, book_id=cart_item.book_id, price=cart_item.price, order_id=order.id)
+            db.session.add(order_item)
+            order.payment_amount += cart_item.price
+            db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        if order:
+            db.session.delete(order)
+            db.session.commit()
+    return url_for('index')
 
 
 # 管理员界面 显示最新记录10条

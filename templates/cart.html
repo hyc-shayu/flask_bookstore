@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as macros %}
+{% block title %}购物车{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/cart.css') }}">
+    <script src="{{ url_for('static',filename='javaScript/jquery-input-counter.js') }}"></script>
+    <script src="{{ url_for('static',filename='javaScript/cart.js') }}"></script>
+{% endblock %}
+
+{% block carousel %}
+{% endblock %}
+
+{% block main %}
+    <table class="table table-hover">
+        <tbody>
+        {% for item in user.cart.cart_items %}
+            <tr data-item_id="{{ item.id }}">
+                <td style="vertical-align: middle">
+                    <input type="checkbox" checked>
+                </td>
+                <td style="vertical-align:middle;width: 30%"><img
+                        src="{{ url_for('static',filename='image/icon.png') }}"
+                        style="height: 100px"/></td>
+                <td style="vertical-align: middle;width: 25%">{{ item.book.name }}</td>
+                <td style="vertical-align: middle;width: 15%">
+                    <div class="spinner-div">
+                        <button type="button" class="btn btn-subtract" style="padding: 1px 5px">
+                            -
+                        </button>
+                        <input size="1" type="text" class="input-counter input_quantity"
+                               data-price="{{ item.book.price }}" data-item_id="{{ item.id }}"
+                               data-min="1" data-max="{{ item.book.quantity }}" data-default="{{ item.quantity }}">
+                        <button type="button" class="btn btn-add" style="padding: 1px 5px">
+                            +
+                        </button>
+                    </div>
+                </td>
+                <td style="vertical-align: middle">
+                    <div class="input-group">
+                        <div class="input-group-addon">￥</div>
+                        <input type="text" class="form-control" value="{{ item.price }}" disabled>
+                    </div>
+                </td>
+                <td style="vertical-align: middle">
+                    <a class="btn btn-warning" href="{{ url_for('delete_cart_item',item_id=item.id) }}">删除</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div>
+        <button class="btn btn-success pull-right" id="btn_buy">购买</button>
+        <button class="btn pull-right" id="btn_check_all">全选</button>
+        <select class="form-control pull-left" id="sel_address">
+            {% for recipient in user.recipients %}
+                <option value="{{ recipient.id }}">
+                    <p><strong>{{ recipient.address }}</strong>&emsp;&emsp;&emsp;{{ recipient.name }}&emsp;&emsp;&emsp;
+                        {{ recipient.phone }}</p>
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}

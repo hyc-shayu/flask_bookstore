@@ -15,7 +15,7 @@
     {% endblock %}
     {% from 'bootstrap/form.html' import render_form %}
 </head>
-<body data-spy="scroll" data-target="#myScrollspy">
+<body>
 {% if get_flashed_messages() %}
     <script type="text/javascript">$(function () {
         alert('{{ get_flashed_messages()|first }}')
@@ -53,7 +53,7 @@
                 {% if user %}
                     <li class="base-active nav-active"><a
                             href="{{ url_for('personal_information') }}">{{ user.username }}</a></li>
-                    <li class="base-active nav-active"><a href="{{ url_for('register') }}">
+                    <li class="base-active nav-active"><a href="{{ url_for('query_cart') }}">
                         <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
                         <span class="badge pull-right">{{ user.cart.cart_items|length }}</span>购物车</a></li>
                     <li class="base-active nav-active"><a href="{{ url_for('register') }}">
