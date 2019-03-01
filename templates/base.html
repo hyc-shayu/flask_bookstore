@@ -16,11 +16,6 @@
     {% from 'bootstrap/form.html' import render_form %}
 </head>
 <body data-spy="scroll" data-target="#myScrollspy">
-{% if get_flashed_messages() %}
-    <script type="text/javascript">$(function () {
-        alert('{{ get_flashed_messages()|first }}')
-    })</script>
-{% endif %}
 <nav class="navbar navbar-default">
     <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -56,7 +51,7 @@
                     <li class="base-active nav-active"><a href="{{ url_for('query_cart') }}">
                         <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
                         <span class="badge pull-right">{{ user.cart.cart_items|length }}</span>购物车</a></li>
-                    <li class="base-active nav-active"><a href="{{ url_for('register') }}">
+                    <li class="base-active nav-active"><a href="{{ url_for('orders_view') }}">
                         <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
                         订单</a></li>
                     <li class="base-active nav-active"><a href="{{ url_for('logout') }}">注销</a></li>
@@ -132,12 +127,18 @@
         {% block main %}{% endblock %}
     </div>
 </div>
-
+<div id="div_modal">
 {% block book_madol %}
     {#    模态框 #}
     <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
          aria-labelledby="exampleModalLabel">
     </div>
 {% endblock %}
+</div>
+{% if get_flashed_messages() %}
+    <script type="text/javascript">$(function () {
+        alert('{{ get_flashed_messages()|first }}')
+    })</script>
+{% endif %}
 </body>
 </html>

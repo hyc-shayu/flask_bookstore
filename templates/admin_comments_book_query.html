@@ -1,4 +1,6 @@
 {% extends 'admin_comments_book.html' %}
 {% block page %}
-    {{ macros.pagination_widget_href_get(paginate,url) }}
+    {% if paginate.pages > 1 %}
+        {{ macros.pagination_widget_href_get(paginate,url) }}
+    {% endif %}
 {% endblock %}

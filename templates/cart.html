@@ -49,15 +49,27 @@
         {% endfor %}
         </tbody>
     </table>
-    <div>
-        <button class="btn btn-success pull-right" id="btn_buy">购买</button>
-        <button class="btn pull-right" id="btn_check_all">全选</button>
-        <select class="form-control pull-left" id="sel_address" style="width: 80%;overflow: hidden">
-            {% for recipient in user.recipients %}
-                <option value="{{ recipient.id }}">
-                    {{ recipient.address }}&emsp;&emsp;&emsp;&emsp;&emsp;{{ recipient.name }}&emsp;&emsp;&emsp;&emsp;{{ recipient.phone }}
-                </option>
-            {% endfor %}
-        </select>
+    {% if user.cart.cart_items|length > 0 %}
+        <div>
+            <form>
+            </form>
+            <button class="btn btn-success pull-right" id="btn_buy" data-toggle="modal" data-target="#modal-pay"
+            >购买
+            </button>
+            <button class="btn pull-right" id="btn_check_all">全选</button>
+            <select class="form-control pull-left" id="sel_address" style="width: 80%;overflow: hidden">
+                {% for recipient in user.recipients %}
+                    <option value="{{ recipient.id }}">
+                        {{ recipient.address }}&emsp;&emsp;&emsp;&emsp;&emsp;{{ recipient.name }}&emsp;&emsp;&emsp;&emsp;{{ recipient.phone }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block book_madol %}
+    {#    模态框 #}
+    <div class="modal fade modal-pay" tabindex="-1" role="dialog" id="modal-pay"
+         aria-labelledby="exampleModalLabel">
     </div>
 {% endblock %}

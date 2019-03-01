@@ -16,7 +16,7 @@
 {% endfor %}
 </div>
 {% block page %}
-    {% if paginate.items %}
+    {% if paginate.pages > 1 %}
         {{ macros.pagination_widget(paginate,'admin_comments_manage_by_book') }}
     {% endif %}
 {% endblock %}

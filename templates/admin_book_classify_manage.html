@@ -23,7 +23,7 @@
                     </h4>
                 </li>
             </div>
-{#           折叠框 #}
+            {#           折叠框 #}
             <div id="collapse_classify_{{ book_classify.id }}" class="panel-collapse collapse">
                 <div class="panel-body pagination-fill-div">
                 </div>
@@ -40,9 +40,9 @@
     >添加图书
     </a>
     {% block page %}
-    <ul>
-        {{ macros.pagination_widget(paginate,'book_classify_manage') }}
-    </ul>
+        {% if paginate.pages > 1 %}
+            {{ macros.pagination_widget(paginate,'book_classify_manage') }}
+        {% endif %}
     {% endblock %}
 </div>
 

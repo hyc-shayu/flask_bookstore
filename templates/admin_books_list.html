@@ -16,9 +16,9 @@
 </li>
 {% if loop.last %}
     </ul>
-    <ul>
+    {% if paginate.pages > 1 %}
         {{ macros.pagination_widget(paginate,'get_books_list',book_classify_id=book.book_classify_id) }}
-    </ul>
+    {% endif %}
 {% endif %}
 {% endfor %}
 {#    模态框 #}

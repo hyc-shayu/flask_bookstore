@@ -10,10 +10,10 @@ $(function () {
 
     let isSave;
     //页面关闭时调用
-    $(window).on('unload', function () {
-        if(!isSave)
-            storeChange();
-    });
+    // $(window).on('unload', function () {
+    //     if(!isSave)
+    //         storeChange();
+    // });
 
     //页面刷新时调用
     $(window).on('beforeunload', function (event) {
@@ -54,12 +54,18 @@ $(function () {
             type:'POST',
             url:'/create_order',
             contentType:'application/json',
+            dataType:'html',
             data:JSON.stringify({item_list:item_list,recipient_id:recipient_id}),
-            success:function (url) {
-                window.location.href=url;
+            success:function (data) {
+                $('div.modal-pay:first').html(data);
             }
         })
     });
+
+    //订单支付 提交表单
+    $('#div_modal').on('click','#inp_submit',function () {
+        $('#pay_form').submit();
+    })
 });
 
 

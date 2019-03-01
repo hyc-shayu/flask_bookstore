@@ -1,6 +1,7 @@
 from app import app
-from flask import request, render_template, redirect, url_for, session, flash, jsonify
+from flask import request, render_template, redirect, url_for, session, flash, jsonify, g, abort
 from sqlalchemy import or_
+from functools import wraps
 
 from forms import *
 from models import *
@@ -11,8 +12,26 @@ BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
 
 
+# 自定义检查登录错误类
+class CheckLoginError(Exception):
+    pass
+
+
+# 装饰器 检查用户登录状态
+def check_login(func):
+    @wraps(func)
+    def wrapper(*args,**kwargs):
+        if not get_user():
+            raise CheckLoginError
+        return func(*args,**kwargs)
+    return wrapper
+
+
 @app.route('/')
 def index():
+    scroll_pos = request.args.get('scroll_pos')
+    if scroll_pos:
+        g.scroll_pos = scroll_pos
     page = get_page()
     paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id)\
         .paginate(page, CLASSIFY_PAGE_SIZE, False)
@@ -22,6 +41,9 @@ def index():
 # 新书
 @app.route('/new_books')
 def rank_new_book():
+    scroll_pos = request.args.get('scroll_pos')
+    if scroll_pos:
+        g.scroll_pos = scroll_pos
     page = get_page()
     paginate = Book.query.paginate(page, BOOK_PAGE_SIZE, False)
     return render_template('book.html', paginate=paginate, url=request.path)
@@ -30,6 +52,9 @@ def rank_new_book():
 # 图书分类页面
 @app.route('/book_classify_<int:book_classify_id>')
 def books_view_classify(book_classify_id):
+    scroll_pos = request.args.get('scroll_pos')
+    if scroll_pos:
+        g.scroll_pos = scroll_pos
     page = get_page()
     classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
     paginate = Book.query.filter(Book.book_classify_id == book_classify_id).paginate(page, BOOK_PAGE_SIZE, False)
@@ -41,6 +66,9 @@ def books_view_classify(book_classify_id):
 # 用户搜索图书
 @app.route('/books_query')
 def books_query():
+    scroll_pos = request.args.get('scroll_pos')
+    if scroll_pos:
+        g.scroll_pos = scroll_pos
     page = get_page()
     query_str = request.args.get('search_str')
     paginate = Book.query.filter(Book.name.like('%' + query_str + '%')).paginate(page, BOOK_PAGE_SIZE, False)
@@ -178,7 +206,10 @@ def update_password(form):
 @app.route('/add_to_cart')
 def add_to_cart():
     book_id = request.args.get('book_id')
+    scroll_pos = request.args.get('scrollPos')
     user = get_user()
+    if not user:
+        return redirect(url_for('login'))
     if user.cart:
         cart_item = CartItem.query.filter(CartItem.cart_id == user.cart.id).filter(CartItem.book_id == book_id).one_or_none()
     else:
@@ -195,7 +226,27 @@ def add_to_cart():
         user.cart.price += book.price
     db.session.commit()
     flash('添加成功')
-    return redirect(request.referrer)
+    url = request.referrer
+    url = deal_url(url, scroll_pos)
+    return redirect(url)
+
+
+# 处理url 为url添加滚动条位置参数
+def deal_url(url, scroll_pos):
+    if '?' in url:
+        if 'scroll_pos' in url:
+            str1 = url.split('scroll_pos', 1)
+            str_tmp = str1[1].split('&',1)
+            if len(str_tmp) > 1:
+                str_tmp = '&' + str_tmp[1]
+            else:
+                str_tmp = ''
+            url = str1[0] + 'scroll_pos=' + scroll_pos + str_tmp
+        else:
+            url += '&scroll_pos=' + scroll_pos
+    else:
+        url += '?scroll_pos=' + scroll_pos
+    return url
 
 
 # 删除购物车中的项
@@ -246,13 +297,47 @@ def create_order():
             order_item = OrderItem(quantity=cart_item.quantity, book_id=cart_item.book_id, price=cart_item.price, order_id=order.id)
             db.session.add(order_item)
             order.payment_amount += cart_item.price
-            db.session.commit()
+            db.session.delete(cart_item)
+        db.session.commit()
     except Exception as e:
         db.session.rollback()
         if order:
             db.session.delete(order)
             db.session.commit()
-    return url_for('index')
+    return render_template('pay.html',order=order)
+
+
+# 支付
+@app.route('/pay', methods=['POST'])
+@check_login
+def pay():
+    order_id = request.form.get('order_id')
+    order = OrderTable.query.filter(order_id == OrderTable.id).one()
+    if order.state == '待付款':
+        order.state = '待发货'
+        db.session.commit()
+    else:
+        flash('error')
+    return redirect(url_for('index'))
+
+
+# 查看订单页面
+@app.route('/orders')
+@check_login
+def orders_view():
+    page = get_page()
+    user = get_user()
+    paginate = OrderTable.query.filter(OrderTable.user_id == user.id).paginate(page, BOOK_PAGE_SIZE, False)
+    return render_template('orders.html', paginate=paginate)
+
+
+# 订单详情页面
+@app.route('/order_detail')
+@check_login
+def order_detail():
+    order_id = request.args.get('order_id')
+    order = OrderTable.query.filter(OrderTable.id == order_id and OrderTable.user_id == get_user().id).one_or_none()
+    return render_template('order_detail.html', order=order)
 
 
 # 管理员界面 显示最新记录10条
@@ -526,3 +611,18 @@ def my_context_processor():
     else:
         my_dict.update(book_classifies=book_classifies)
     return my_dict
+
+
+@app.errorhandler(CheckLoginError)
+def error_no_login(error):
+    return redirect(url_for('login'))
+
+
+@app.errorhandler(404)
+def error_404():
+    return '找不到页面'
+
+
+@app.errorhandler(500)
+def error_500():
+    return '服务器去吃饭了，请稍后再试'

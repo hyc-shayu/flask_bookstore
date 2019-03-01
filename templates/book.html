@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block main %}
+    {% if g.scroll_pos %}
+        <script type="text/javascript">
+        $(function () {
+            document.documentElement.scrollTop=parseInt({{ g.scroll_pos }});
+            document.body.scrollTop=parseInt({{ g.scroll_pos }});
+        });
+        </script>
+    {% endif %}
     {% if title %}
         <h2>{{ title }}</h2>
     {% endif %}
@@ -27,7 +35,7 @@
             </div>
         {% endfor %}
     </div>
-    {% if paginate.items %}
+    {% if paginate.pages > 1 %}
         {{ macros.pagination_widget_href_get(paginate, url) }}
     {% endif %}
 {% endblock %}

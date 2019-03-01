@@ -28,6 +28,21 @@ $(function () {
         });
     });
 
+    //点击添加到购物车
+    $('div.main').off('click', '.a_add_to_cart').on('click', '.a_add_to_cart', function () {
+        let origin_href = $(this).prop('href');
+        let scrollPos;
+        if (typeof window.pageYOffset != 'undefined') {
+            scrollPos = window.pageYOffset;
+        } else if (typeof document.compatMode != 'undefined' &&
+            document.compatMode != 'BackCompat') {
+            scrollPos = document.documentElement.scrollTop;
+        } else if (typeof document.body != 'undefined') {
+            scrollPos = document.body.scrollTop;
+        }
+        $(this).prop('href', origin_href + '&scrollPos='+scrollPos);
+    });
+
     // 管理员 点击评论|图书 显示 图书详情 定位到该评论 模态框
     $("div.main-div").off('click', '.show_modal a').on("click", ".show_modal a", function () {
         let url = $(this).data('url');

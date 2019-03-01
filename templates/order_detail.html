@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    订单详情
+{% endblock %}
+
+{% block head %}
+    <script src="{{ url_for('static',filename='javaScript/order.js') }}"></script>
+    <script src="{{ url_for('static',filename='javaScript/cart.js') }}"></script>
+{% endblock %}
+
+{% block main %}
+    <dl class="dl-horizontal">
+        <dt>订单号</dt>
+        <dd>{{ order.id }}</dd>
+        <dt>收货人</dt>
+        <dd>{{ order.name }}</dd>
+        <dt>收货地址</dt>
+        <dd>{{ order.address }}</dd>
+        <dt>联系电话</dt>
+        <dd>{{ order.phone }}</dd>
+        <dt>订单状态</dt>
+        <dd>{{ order.state }}</dd>
+        <dt>订单创建时间</dt>
+        <dd>{{ order.create_time }}</dd>
+        <dt>总价</dt>
+        <dd>{{ order.payment_amount }}</dd>
+    </dl>
+    <table class="table table-hover">
+        <tbody>
+        {% for item in order.order_items %}
+            <tr>
+                <td style="vertical-align:middle;width: 30%"><img
+                        src="{{ url_for('static',filename='image/icon.png') }}"
+                        style="height: 100px"/></td>
+                <td style="vertical-align: middle;width: 25%">{{ item.book.name }}</td>
+                <td style="vertical-align: middle;width: 15%">{{ item.quantity }}</td>
+                <td style="vertical-align: middle">
+                    <div class="input-group">
+                        <div class="input-group-addon">￥</div>
+                        <input type="text" class="form-control" value="{{ item.price }}" disabled>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if order.state == '待付款' %}
+        <button class="btn btn-success pull-right" id="btn_to_pay" data-toggle="modal" data-target="#modal-pay"
+        >去付款
+        </button>
+        <a href="#" class="btn btn-danger pull-right">取消订单</a>
+    {% elif order.state == '待发货' %}
+        <a href="#" class="btn btn-danger pull-right">取消订单</a>
+    {% elif order.state == '待收货' %}
+        <a href="#" class="btn btn-success pull-right">确认收货</a>
+    {% elif order.state == '已完成' %}
+        <a href="#" class="btn btn-warning pull-right">申请退货</a>
+    {% endif %}
+{% endblock %}
+
+{% block carousel %}
+
+{% endblock %}
+
+{% block book_madol %}
+    {#    模态框 #}
+    <div class="modal fade modal-pay" tabindex="-1" role="dialog" id="modal-pay"
+         aria-labelledby="exampleModalLabel">
+    </div>
+{% endblock %}
