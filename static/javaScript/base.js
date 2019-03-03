@@ -6,7 +6,7 @@ $(function () {
     });
 
     // 模态框分页 图书详情
-    $("div.main-div").off('click', '.ajPage a').on("click", ".ajPage a", function () {
+    $("body:first").off('click', '.ajPage a').on("click", ".ajPage a", function () {
         let url = $(this).data('href');
         let book_id = $(".modal-dialog:first").data('book_id');
         let page = $(this).data('page');

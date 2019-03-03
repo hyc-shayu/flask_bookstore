@@ -44,7 +44,7 @@ $(function () {
     });
 
     // 管理员 点击评论|图书 显示 图书详情 定位到该评论 模态框
-    $("div.main-div").off('click', '.show_modal a').on("click", ".show_modal a", function () {
+    $("body:first").off('click', '.show_modal a').on("click", ".show_modal a", function () {
         let url = $(this).data('url');
         let book_id = $(this).data("book_id");
         let comment_id = $(this).data('comment_id');

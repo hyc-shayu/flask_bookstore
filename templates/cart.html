@@ -19,9 +19,14 @@
                 <td style="vertical-align: middle">
                     <input type="checkbox" checked>
                 </td>
-                <td style="vertical-align:middle;width: 30%"><img
-                        src="{{ url_for('static',filename='image/icon.png') }}"
-                        style="height: 100px"/></td>
+                <td class="show_modal" style="vertical-align:middle;width: 30%">
+                    <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+                       data-url="{{ url_for('book_detail_customer',book_id=item.book.id) }}"
+                       class="thumbnail">
+                        <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                             style="height: 100px;">
+                    </a>
+                </td>
                 <td style="vertical-align: middle;width: 25%">{{ item.book.name }}</td>
                 <td style="vertical-align: middle;width: 15%">
                     <div class="spinner-div">
@@ -70,6 +75,10 @@
 {% block book_madol %}
     {#    模态框 #}
     <div class="modal fade modal-pay" tabindex="-1" role="dialog" id="modal-pay"
+         aria-labelledby="exampleModalLabel">
+    </div>
+    {#    模态框 #}
+    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
          aria-labelledby="exampleModalLabel">
     </div>
 {% endblock %}

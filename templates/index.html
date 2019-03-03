@@ -2,14 +2,7 @@
 {% import '_macros.html' as macros %}
 {% block title %}首页{% endblock %}
 {% block head %}
-    {% if g.scroll_pos %}
-        <script type="text/javascript">
-        $(function () {
-            document.documentElement.scrollTop=parseInt({{ g.scroll_pos }});
-            document.body.scrollTop=parseInt({{ g.scroll_pos }});
-        });
-        </script>
-    {% endif %}
+
 {% endblock %}
 
 {% block main %}

@@ -20,10 +20,10 @@ class CheckLoginError(Exception):
 # 装饰器 检查用户登录状态
 def check_login(func):
     @wraps(func)
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         if not get_user():
             raise CheckLoginError
-        return func(*args,**kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 
@@ -180,7 +180,7 @@ def save_up_address():
         recipient.phone = phone
         recipient.address = address
     else:
-        recipient = Recipient(user_id=get_user().id,name=name,phone=phone,address=address)
+        recipient = Recipient(user_id=get_user().id, name=name, phone=phone, address=address)
         db.session.add(recipient)
     db.session.commit()
     flash('修改完成')
@@ -236,7 +236,7 @@ def deal_url(url, scroll_pos):
     if '?' in url:
         if 'scroll_pos' in url:
             str1 = url.split('scroll_pos', 1)
-            str_tmp = str1[1].split('&',1)
+            str_tmp = str1[1].split('&', 1)
             if len(str_tmp) > 1:
                 str_tmp = '&' + str_tmp[1]
             else:
@@ -270,7 +270,7 @@ def query_cart():
 def save_cart():
     items = request.json
     cart_items = get_user().cart.cart_items
-    for k,value in items.items():
+    for k, value in items.items():
         for item in cart_items:
             if item.id == int(k):
                 item.quantity = int(value)
@@ -289,7 +289,7 @@ def create_order():
     recipient = Recipient.query.filter(Recipient.id == recipient_id).one()
     user = get_user()
     try:
-        order = OrderTable(user_id=user.id, recipient_id=recipient_id, name=recipient.name,phone=recipient.phone,address=recipient.address)
+        order = OrderTable(user_id=user.id, recipient_id=recipient_id, name=recipient.name, phone=recipient.phone, address=recipient.address)
         db.session.add(order)
         db.session.commit()
         for item_id in item_id_list:
@@ -552,7 +552,7 @@ def book_detail(page=1):
 # 图书详情-模态框ajax
 @app.route('/book_detail_<int:page>', methods=['POST'])
 @app.route('/book_detail', methods=['POST'])
-def book_detail_customer( page=1):
+def book_detail_customer(page=1):
     return book_detail(page)
 
 

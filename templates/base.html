@@ -128,17 +128,29 @@
     </div>
 </div>
 <div id="div_modal">
-{% block book_madol %}
-    {#    模态框 #}
-    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
-         aria-labelledby="exampleModalLabel">
-    </div>
-{% endblock %}
+    {% block book_madol %}
+        {#    模态框 #}
+        <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+             aria-labelledby="exampleModalLabel">
+        </div>
+    {% endblock %}
 </div>
+{% if g.scroll_pos %}
+    <script type="text/javascript">
+        $(function () {
+            document.documentElement.scrollTop = parseInt({{ g.scroll_pos }});
+            document.body.scrollTop = parseInt({{ g.scroll_pos }});
+        });
+    </script>
+{% endif %}
 {% if get_flashed_messages() %}
-    <script type="text/javascript">$(function () {
-        alert('{{ get_flashed_messages()|first }}')
-    })</script>
+    <script type="text/javascript">
+        $(function () {
+            document.documentElement.scrollTop = parseInt({{ g.scroll_pos }});
+            document.body.scrollTop = parseInt({{ g.scroll_pos }});
+            alert('{{ get_flashed_messages()|first }}')
+        })
+    </script>
 {% endif %}
 </body>
 </html>
