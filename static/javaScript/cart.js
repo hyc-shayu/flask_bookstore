@@ -40,10 +40,16 @@ $(function () {
         let price = $(this).data('price');
         let quantity = $(this).val();
         $(this).parents('td:first').next().find('input:first').val(parseFloat(price*quantity).toFixed(1));
-    })
+    });
+
+    //删除按钮
+    $('.a_del_cart_item').on('click',function () {
+        storeChange();
+    });
 
     //点击购买按钮
     $('#btn_buy').on('click',function () {
+        storeChange();
         let item_list = new Array();
         for (let i = 0,input = $("input[type='checkbox']"); i < input.length; i++) {
             if (input.eq(i).is(':checked'))
@@ -60,6 +66,11 @@ $(function () {
                 $('div.modal-pay:first').html(data);
             }
         })
+    });
+
+    //支付 关闭 跳转到订单
+    $('#div_modal').on('click', 'button', function () {
+        window.location.href='/orders';
     });
 
     //订单支付 提交表单

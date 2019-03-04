@@ -64,15 +64,17 @@ def books_view_classify(book_classify_id):
 
 
 # 用户搜索图书
+@app.route('/books_query_<query_str>')
 @app.route('/books_query')
-def books_query():
+def books_query(query_str=None):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
     page = get_page()
-    query_str = request.args.get('search_str')
+    if not query_str:
+        query_str = request.args.get('search_str')
     paginate = Book.query.filter(Book.name.like('%' + query_str + '%')).paginate(page, BOOK_PAGE_SIZE, False)
-    return render_template('book.html', paginate=paginate, url=request.path)
+    return render_template('book.html', paginate=paginate, url=url_for('books_query', query_str=query_str))
 
 
 # 从url获取页数
