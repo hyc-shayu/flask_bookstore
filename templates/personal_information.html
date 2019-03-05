@@ -57,7 +57,8 @@
 {% endblock %}
 
 {% block main %}
-        <div class="row">
+    <div class="row">
+        {% if not user.admin %}
             <div class="col-xs-3 pull-right" id="myScrollspy">
                 <ul class="nav nav-tabs nav-stacked" data-spy="affix" data-offset-top="125">
                     <li class="active"><a href="#section-1">基本信息</a></li>
@@ -65,13 +66,15 @@
                     <li><a href="#section-3">修改密码</a></li>
                 </ul>
             </div>
-            <div class="col-xs-9">
-                <h3 id="section-1" class="title">{{ user.username }}的个人中心</h3>
-                <div class="container container35">
-                    <div style="margin-bottom: 50px">
-                        <h4 class="title">基本信息</h4>
-                        {{ render_form(form) }}
-                    </div>
+        {% endif %}
+        <div class="col-xs-9">
+            <h3 id="section-1" class="title">{{ user.username }}的个人中心</h3>
+            <div class="container container35">
+                <div style="margin-bottom: 50px">
+                    <h4 class="title">基本信息</h4>
+                    {{ render_form(form) }}
+                </div>
+                {% if not user.admin %}
                     <div style="margin-bottom: 50px">
                         <h4 id="section-2" class="title">收货地址</h4>
                         {% if user.recipients %}
@@ -101,13 +104,14 @@
                            onclick="opt_address(this)">
                             添加地址</a>
                     </div>
-                    <div style="margin-bottom: 50px">
-                        <h4 id="section-3" class="title">修改密码</h4>
-                        {{ render_form(pwd_form) }}
-                    </div>
+                {% endif %}
+                <div style="margin-bottom: 50px">
+                    <h4 id="section-3" class="title">修改密码</h4>
+                    {{ render_form(pwd_form) }}
                 </div>
             </div>
         </div>
+    </div>
 {% endblock %}
 
 {% block book_madol %}

@@ -1,17 +1,19 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 
 {% block title %}
-    订单详情
+
 {% endblock %}
 
 {% block head %}
-    <script src="{{ url_for('static',filename='javaScript/order.js') }}"></script>
+
 {% endblock %}
 
 {% block main %}
     <dl class="dl-horizontal">
         <dt>订单号</dt>
         <dd>{{ order.id }}</dd>
+        <dt>用户名</dt>
+        <dd>{{ order.user.name }}</dd>
         <dt>收货人</dt>
         <dd>{{ order.name }}</dd>
         <dt>收货地址</dt>
@@ -49,31 +51,25 @@
         {% endfor %}
         </tbody>
     </table>
-    {% if order.state == '待付款' %}
-        <button class="btn btn-success pull-right" id="btn_to_pay" data-toggle="modal" data-target="#modal-pay"
-        >去付款
-        </button>
-        <a href="{{ url_for('order_cancel', order_id = order.id) }}" class="btn btn-danger pull-right">取消订单</a>
-    {% elif order.state == '待发货' %}
-        <a href="{{ url_for('order_cancel', order_id = order.id) }}" class="btn btn-danger pull-right">取消订单</a>
-    {% elif order.state == '待收货' %}
-        <a href="#" class="btn btn-success pull-right">确认收货</a>
-    {% elif order.state == '已完成' %}
-        <a href="#" class="btn btn-warning pull-right">申请退货</a>
+    {% if order.state == '待发货' or order.state == '申请退货' or order.state == '同意退货' or order.state == '拒绝退货' %}
+        <form action="{{ url_for('order_update', order_id=order.id) }}" method="post">
+            <select id="select_state" class="form-control" name="state">
+                {% if order.state == '待发货' %}
+                    <option value="待发货">待发货</option>
+                    <option value="待收货">待收货</option>
+                {% elif order.state == '申请退货' %}
+                    <option value="申请退货">申请退货</option>
+                    <option value="同意退货">同意退货</option>
+                    <option value="拒绝退货">拒绝退货</option>
+                {% else %}
+                    <option value="同意退货">同意退货</option>
+                    <option value="拒绝退货">拒绝退货</option>
+                    <option value="已退货">已退货</option>
+                {% endif %}
+                <option value="已完成">已完成</option>
+                <option value="已取消">已取消</option>
+            </select>
+            <input type="submit" value="修改"/>
+        </form>
     {% endif %}
-{% endblock %}
-
-{% block carousel %}
-
-{% endblock %}
-
-{% block book_madol %}
-    {#    模态框 #}
-    <div class="modal fade modal-pay" tabindex="-1" role="dialog" id="modal-pay"
-         aria-labelledby="exampleModalLabel">
-    </div>
-    {#    模态框 #}
-    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
-         aria-labelledby="exampleModalLabel">
-    </div>
 {% endblock %}

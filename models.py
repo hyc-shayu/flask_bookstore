@@ -48,6 +48,7 @@ class OrderTable(db.Model):
     address = db.Column(db.String(100), nullable=False)
 
     payment_amount = db.Column(db.Float, nullable=False, default=0)
+    # 是否还缺少状态 拒绝退货 同意退货
     state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
@@ -97,6 +98,7 @@ class BookClassify(db.Model):
     books = db.relationship('Book', cascade='all, delete-orphan')
 
 
+# 买书才能评论？
 class Book(db.Model):
     __tablename__ = 'book'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

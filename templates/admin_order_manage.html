@@ -1,0 +1,62 @@
+{% extends 'admin_base.html' %}
+
+{% block head %}
+    <style type="text/css">
+        td {
+            vertical-align: middle;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+        th{
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}
+订单管理
+{% endblock %}
+
+{% block main %}
+    {% if paginate %}
+        <table class="table table-hover text-center" style="table-layout: fixed; word-break: break-all;  word-wrap: break-word;">
+            <thead>
+            <tr>
+                <th style="width: 10%">订单号</th>
+                <th style="width: 15%">用户</th>
+                <th style="width: 10%">订单状态</th>
+                <th style="width: 20%">创建时间</th>
+                <th style="width: 20%">订单</th>
+                <th style="width: 12%">总价</th>
+                <th>...</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for order in paginate.items %}
+                <tr data-order_id="{{ order.id }}">
+                    <th style="vertical-align:middle;white-space:normal">{{ order.id }}</th>
+                    <td style="vertical-align: middle;white-space:normal">{{ order.user.name }}</td>
+                    <td style="vertical-align: middle;white-space:normal">{{ order.state }}</td>
+                    <td style="vertical-align: middle;white-space:normal">{{ order.create_time }}</td>
+                    <td style="white-space:normal;text-align: left">
+                        <ul style="margin: 0;">
+                            {% for item in order.order_items[:4] %}
+                                <li>
+                                    {{ item.book.name }} &nbsp;&nbsp;*&nbsp;&nbsp; {{ item.quantity }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td style="vertical-align: middle;white-space:normal">￥{{ order.payment_amount }}</td>
+                    <td style="vertical-align: middle;white-space:normal">
+                        <a class="btn" href="{{ url_for('admin_order_detail', order_id=order.id) }}">查看详情</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    {% if paginate.pages > 1 %}
+        {{ macros.pagination_widget_href_get(paginate, request.path) }}
+    {% endif %}
+{% endblock %}

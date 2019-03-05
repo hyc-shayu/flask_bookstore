@@ -27,6 +27,19 @@ def check_login(func):
     return wrapper
 
 
+# 装饰器 检查管理员登录状态
+def check_admin(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user = get_user()
+        if not user:
+            raise CheckLoginError
+        if not user.admin:
+            raise  CheckLoginError
+        return func(*args, **kwargs)
+    return wrapper
+
+
 @app.route('/')
 def index():
     scroll_pos = request.args.get('scroll_pos')
@@ -311,10 +324,9 @@ def create_order():
 
 # 支付
 @app.route('/pay', methods=['POST'])
-@check_login
 def pay():
     order_id = request.form.get('order_id')
-    order = OrderTable.query.filter(order_id == OrderTable.id).one()
+    order = OrderTable.query.filter(order_id == OrderTable.id and OrderTable.user_id == get_user().id).one()
     if order.state == '待付款':
         order.state = '待发货'
         db.session.commit()
@@ -325,7 +337,6 @@ def pay():
 
 # 查看订单页面
 @app.route('/orders')
-@check_login
 def orders_view():
     page = get_page()
     user = get_user()
@@ -335,13 +346,47 @@ def orders_view():
 
 # 订单详情页面
 @app.route('/order_detail')
-@check_login
 def order_detail():
     order_id = request.args.get('order_id')
     order = OrderTable.query.filter(OrderTable.id == order_id and OrderTable.user_id == get_user().id).one_or_none()
     return render_template('order_detail.html', order=order)
 
 
+# 取消订单
+@app.route('/order_cancel_<order_id>')
+def order_cancel(order_id):
+    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    if order.state == '待付款' or order.state == '待发货':
+        order.state = '已取消'
+    else:
+        abort(404)
+    db.session.commit()
+    return redirect(url_for(order_detail))
+
+
+# 确认收货
+@app.route('/order_complete_<order_id>')
+def order_complete(order_id):
+    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    if order.state == '待收货':
+        order.state = '已完成'
+    else:
+        abort(404)
+    return redirect(url_for(order_detail))
+
+
+# 申请退货
+@app.route('/order_apply_return_<order_id>')
+def order_apply_return(order_id):
+    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    if order.state == '已完成':
+        order.state = '申请退货'
+    else:
+        abort(404)
+    return redirect(url_for(order_detail))
+
+
+# 管理员相关视图函数
 # 管理员界面 显示最新记录10条
 @app.route('/admin/', methods=['GET', 'POST'])
 def admin_view():
@@ -380,9 +425,26 @@ def order_update(order_id):
         order.state = request.form.get('state')
         db.session.commit()
     else:
-        flash('404')
+        abort(404)
     return jsonify()
     # return redirect(url_for(admin_view))
+
+
+# 管理员订单管理页面
+@app.route('/admin/order_view')
+@check_admin
+def admin_order_manage():
+    page = get_page()
+    paginate = OrderTable.query.order_by(OrderTable.create_time.desc()).paginate(page, PAGE_SIZE)
+    return render_template('admin_order_manage.html', paginate=paginate)
+
+
+# 管理员订单详情页面
+@app.route('/admin/order_detail_<order_id>')
+@check_admin
+def admin_order_detail(order_id):
+    order = OrderTable.query.filter(OrderTable.id == order_id).one_or_none()
+    return render_template('admin_order_detail_page.html', order=order)
 
 
 # 查看图书分类-局部刷新
@@ -518,8 +580,7 @@ def admin_query(query_type='', query_str=''):
             or_(BookClassify.name.like('%' + query_str + '%'), BookClassify.id == int(str_to_int))).paginate(page, PAGE_SIZE, False)
         return render_template('admin_query.html', paginate=paginate, url=url)
     else:
-        flash('404')
-        return '404'
+        abort(404)
 
 
 # 图书详情-模态框ajax
@@ -587,6 +648,7 @@ def get_user():
     return None
 
 
+# 管理员检查
 @app.before_request
 def validate_login():
     urls = request.full_path.split('/')
@@ -601,6 +663,7 @@ def validate_login():
             return redirect(url_for('admin_view'))
 
 
+# 保存上下文变量
 @app.context_processor
 def my_context_processor():
     book_classifies = BookClassify.query.all()
@@ -615,6 +678,7 @@ def my_context_processor():
     return my_dict
 
 
+# 捕捉自定义 登录状态异常
 @app.errorhandler(CheckLoginError)
 def error_no_login(error):
     return redirect(url_for('login'))
