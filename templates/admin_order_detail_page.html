@@ -51,6 +51,24 @@
         {% endfor %}
         </tbody>
     </table>
+    <form action="{{ url_for('admin_order_recipient_modify', order_id=order.id) }}">
+        <fieldset id="fieldset_recipient" disabled>
+            <div class="form-group">
+                <label for="input_recipient_name">收货人</label>
+                <input type="text" name="name" class="form-control" id="input_recipient_name" value="{{ order.name }}">
+            </div>
+            <div class="form-group">
+                <label for="input_recipient_address">收货地址</label>
+                <input type="text" class="form-control" id="input_recipient_address" name="address" value="{{ order.address }}">
+            </div>
+            <div class="form-group">
+                <label for="input_recipient_phone">联系电话</label>
+                <input type="text" class="form-control" id="input_recipient_phone" name="phone" value="{{ order.phone }}">
+            </div>
+            <button type="submit" class="btn" di>确定</button>
+        </fieldset>
+        <a id="alter_input" href="javaScrip:;">修改收货信息</a>
+    </form>
     {% if order.state == '待发货' or order.state == '申请退货' or order.state == '同意退货' or order.state == '拒绝退货' %}
         <form action="{{ url_for('order_update', order_id=order.id) }}" method="post">
             <select id="select_state" class="form-control" name="state">

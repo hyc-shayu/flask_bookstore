@@ -118,18 +118,30 @@ $(function () {
                 }
             })
             $(this).find('.book_sure_btn:first').off('click').on('click', function () {
-                let book_classify_id = $(sel).find('select:first').val();
+
+                $(sel).find('form:first').submit();
+
+                /*let book_classify_id = $(sel).find('select:first').val();
                 let book_name = $(sel).find('#book-name').val();
                 let quantity = $(sel).find('#book-quantity').val();
                 let price = $(sel).find('#book-price').val();
+                let author = $(sel).find('#book-author').val();
+                let publish_time = $(sel).find('#book-publish_time').val();
+                let press = $(sel).find('#book-press').val();
+                let sales_volume = $(sel).find('#book-sales_volume').val();
+                let introduction = $(sel).find('#book-introduction').val();
+                let image = $(sel).find('#book-image').val();
                 $.ajax({
                     type: "POST",
                     url: url,
-                    data: {book_classify_id: book_classify_id, book_name: book_name, quantity: quantity, price: price},
+                    contentType:'application/json',
+                    data: JSON.stringify({book_classify_id: book_classify_id, book_name: book_name, quantity: quantity,
+                        price: price, author:author, publish_time:publish_time, press:press, sales_volume:sales_volume,
+                        introduction:introduction, image:image}),
                     success: function () {
                         reflash_main_div();
                     }
-                })
+                })*/
             })
         });
     });

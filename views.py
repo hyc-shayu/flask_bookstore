@@ -2,6 +2,7 @@ from app import app
 from flask import request, render_template, redirect, url_for, session, flash, jsonify, g, abort
 from sqlalchemy import or_
 from functools import wraps
+import os
 
 from forms import *
 from models import *
@@ -11,6 +12,7 @@ PAGE_SIZE = 12
 BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
 
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
 # 自定义检查登录错误类
 class CheckLoginError(Exception):
@@ -408,7 +410,7 @@ def admin_view():
         return '404'
 
 
-# 查询订单——管理员首页 表格链接
+# 查询订单——管理员首页 表格链接 模态框
 @app.route('/admin/order_query-<order_id>/')
 def order_query(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
@@ -417,7 +419,7 @@ def order_query(order_id):
     return redirect(url_for('admin_view'))
 
 
-# 订单详情——模态框
+# 订单状态修改
 @app.route('/admin/update-order-<order_id>/', methods=['POST'])
 def order_update(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
@@ -445,6 +447,21 @@ def admin_order_manage():
 def admin_order_detail(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one_or_none()
     return render_template('admin_order_detail_page.html', order=order)
+
+
+# 管理员修改订单收货信息
+@app.route('/admin/order_recipient_modify_<order_id>')
+@check_admin
+def admin_order_recipient_modify(order_id):
+    order = OrderTable.query.filter(OrderTable.id == order_id).one_or_none()
+    name = request.args.get('name')
+    address = request.args.get('address')
+    phone = request.args.get('phone')
+    order.name = name
+    order.address = address
+    order.phone = phone
+    db.session.commit()
+    return redirect(request.referrer)
 
 
 # 查看图书分类-局部刷新
@@ -501,30 +518,52 @@ def opt_book_modal():
 
 
 # 增加图书
-@app.route('/admin/add_book', methods=['POST'])
-def add_book():
+# @app.route('/admin/add_book', methods=['POST'])
+# def add_book():
+#     book_classify_id = request.form.get('book_classify_id')
+#     book_name = request.form.get('book_name')
+#     quantity = request.form.get('quantity')
+#     price = request.form.get('price')
+#     book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price)
+#     db.session.add(book)
+#     db.session.commit()
+#     return ''
+
+
+# 修改图书 & 增加图书
+@app.route('/admin/save_update_book', methods=['POST'])
+def save_update_book():
+    book_id = request.form.get('book_id')
     book_classify_id = request.form.get('book_classify_id')
     book_name = request.form.get('book_name')
     quantity = request.form.get('quantity')
     price = request.form.get('price')
-    book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price)
-    db.session.add(book)
-    db.session.commit()
-    return ''
+    author = request.form.get('author')
+    publish_time = request.form.get('publish_time')
+    press = request.form.get('press')
+    introduction = request.form.get('introduction')
 
-
-# 修改图书
-@app.route('/admin/update_book_<int:book_id>', methods=['POST'])
-def update_book(book_id):
-    book_classify_id = request.form.get('book_classify_id')
-    book_name = request.form.get('book_name')
-    quantity = request.form.get('quantity')
-    price = request.form.get('price')
-    book = Book.query.filter(Book.id == book_id).one()
-    book.book_classify_id = book_classify_id
-    book.name = book_name
-    book.quantity = quantity
-    book.price = price
+    now_time = datetime.now().strftime("%Y%m%d%H%M%S");
+    image = request.files.get('image')
+    path = base_dir + "/static/image/books/"
+    random_filename = now_time + image.filename
+    file_path = path + random_filename
+    if book_id:
+        book = Book.query.filter(Book.id == book_id).one()
+        book.book_classify_id = book_classify_id
+        book.name = book_name
+        book.quantity = quantity
+        book.price = price
+        book.author = author
+        book.publish_time = publish_time
+        book.press = press
+        book.introduction = introduction
+        book.image_url = random_filename
+    else:
+        book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price, author=author,
+                    publish_time=publish_time, press=press, introduction=introduction, image_url=random_filename)
+        db.session.add(book)
+    image.save(file_path)
     db.session.commit()
     return ''
 

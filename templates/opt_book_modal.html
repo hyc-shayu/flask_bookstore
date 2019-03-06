@@ -6,28 +6,52 @@
             <h4 class="modal-title" id="exampleModalLabel">图书信息</h4>
         </div>
         <div class="modal-body">
-            <form>
+            <form action="{{ url_for('save_update_book') }}" method="post" enctype="multipart/form-data">
+                {% if book.id %}
+                    <input name="book_id" type="hidden" value="{{ book.id }}">
+                {% endif %}
                 <div class="form-group">
                     <label for="book-name" class="control-label">图书名称:</label>
-                    <input type="text" class="form-control" id="book-name" value="{{ book.name }}">
+                    <input type="text" class="form-control" id="book-name" name="book_name" value="{{ book.name }}">
                 </div>
                 <div class="form-group">
                     <label for="book-quantity" class="control-label">库存数量:</label>
-                    <input type="text" class="form-control" id="book-quantity" value="{{ book.quantity }}">
+                    <input type="text" class="form-control" id="book-quantity" name="quantity" value="{{ book.quantity }}">
                 </div>
                 <div class="form-group">
                     <label for="book-price" class="control-label">价格:</label>
-                    <input type="text" class="form-control" id="book-price" value="{{ book.price }}">
+                    <input type="text" class="form-control" id="book-price" name="price" value="{{ book.price }}">
                 </div>
-                <select id="select_state" class="form-control" name="state">
+                <div class="form-group">
+                    <label for="book-author" class="control-label">作者:</label>
+                    <input type="text" class="form-control" id="book-author" name="author" value="{{ book.author }}">
+                </div>
+                <div class="form-group">
+                    <label for="book-publish_time" class="control-label">出版时间:</label>
+                    <input type="text" class="form-control" id="book-publish_time" name="publish_time" value="{{ book.publish_time }}">
+                </div>
+                <div class="form-group">
+                    <label for="book-press" class="control-label">出版社:</label>
+                    <input type="text" class="form-control" id="book-press" name="press" value="{{ book.press }}">
+                </div>
+                <div class="form-group">
+                    <label for="book-introduction" class="control-label">简介:</label>
+                    <input type="text" class="form-control" id="book-introduction" name="introduction" value="{{ book.introduction }}">
+                </div>
+                <div class="form-group">
+                    <label for="book-image">图片</label>
+                    <input type="file" id="book-image" name="image">
+                </div>
+                <select id="select_state" class="form-control" name="book_classify_id">
                     {% for book_classify in book_classifies %}
-                        <option value="{{ book_classify.id }}" {% if book and book_classify.id == book.book_classify_id %}selected="selected"{% endif %}>{{ book_classify.name }}</option>
+                        <option value="{{ book_classify.id }}"
+                                {% if book and book_classify.id == book.book_classify_id %}selected="selected"{% endif %}>{{ book_classify.name }}</option>
                     {% endfor %}
                 </select>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-primary book_sure_btn"  data-dismiss="modal">确定</button>
+            <button type="button" class="btn btn-primary book_sure_btn" data-dismiss="modal">确定</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
         </div>
     </div>

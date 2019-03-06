@@ -1,6 +1,9 @@
 from app import db
 from datetime import datetime
 
+user_favorite_book_table = db.Table('user_favorite_book',db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                                db.Column('book_id', db.Integer, db.ForeignKey('book.id')))
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -18,6 +21,7 @@ class User(db.Model):
     cart = db.relationship('Cart', uselist=False)
     comments = db.relationship('Comment', back_populates='from_user', foreign_keys='Comment.from_user_id')
     replies = db.relationship('Comment', back_populates='to_user', foreign_keys='Comment.to_user_id')
+    favorite_books = db.relationship('Book', secondary=user_favorite_book_table, back_populates='liked_by_users')
 
 
 class Recipient(db.Model):
@@ -49,7 +53,7 @@ class OrderTable(db.Model):
 
     payment_amount = db.Column(db.Float, nullable=False, default=0)
     # 是否还缺少状态 拒绝退货 同意退货
-    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '已退货'), default='待付款')
+    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '同意退货', '拒绝退货', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
 
@@ -105,10 +109,18 @@ class Book(db.Model):
     name = db.Column(db.String(50), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     price = db.Column(db.Float, nullable=False)
+
+    introduction = db.Column(db.String(512))
+    image_url = db.Column(db.String(255))
+    author = db.Column(db.String(50))
+    publish_time = db.Column(db.Date)
+    press = db.Column(db.String(100)) # 出版社
+    sales_volume = db.Column(db.Integer, default=0)
     # classify 分类外键
     book_classify_id = db.Column(db.Integer, db.ForeignKey('book_classify.id'))
 
     comments = db.relationship('Comment', cascade='all')
+    liked_by_users = db.relationship('User', secondary=user_favorite_book_table, back_populates='favorite_books')
 
 
 class Comment(db.Model):
