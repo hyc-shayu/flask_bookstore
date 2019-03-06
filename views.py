@@ -543,11 +543,12 @@ def save_update_book():
     press = request.form.get('press')
     introduction = request.form.get('introduction')
 
-    now_time = datetime.now().strftime("%Y%m%d%H%M%S");
     image = request.files.get('image')
-    path = base_dir + "/static/image/books/"
-    random_filename = now_time + image.filename
-    file_path = path + random_filename
+    if image:
+        now_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        path = base_dir + "/static/image/books/"
+        random_filename = now_time + image.filename
+        file_path = path + random_filename
     if book_id:
         book = Book.query.filter(Book.id == book_id).one()
         book.book_classify_id = book_classify_id
@@ -558,7 +559,8 @@ def save_update_book():
         book.publish_time = publish_time
         book.press = press
         book.introduction = introduction
-        book.image_url = random_filename
+        if image:
+            book.image_url = random_filename
     else:
         book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price, author=author,
                     publish_time=publish_time, press=press, introduction=introduction, image_url=random_filename)
