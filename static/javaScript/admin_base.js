@@ -14,7 +14,7 @@ $(function () {
 
     //url 目标div
 
-    // 图书管理 图书列表 点击分页事件
+    // 图书管理 图书列表 局部div 点击分页事件
     $("div.main-div").off('click','ul.pagination a').on('click',"ul.pagination a",function () {
        let url = $(this).data('url');
        $(this).parents("div.pagination-fill-div:first").load(url);

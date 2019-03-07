@@ -7,10 +7,16 @@
             <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
                data-url="{{ url_for('book_detail',book_id=book.id) }}"
                class="thumbnail">
-                <img src="{{ url_for('static',filename='image/icon.png') }}" alt="{{ book.name }}"
-                     style="height: 200px; width: 100%; display: block;">
+                <img src="{{ url_for('static',filename=book.image_url) }}" alt="{{ book.name }}"
+                     style="height: 200px;display: block;">
             </a>
             <h4 class="text-center">{{ book.name }}</h4>
+            <small>销售量：{{ book.sales_volume }}&nbsp;&nbsp;&nbsp;&nbsp;价格：￥{{ book.price }}
+                <br/>
+                收藏数：{{ book.liked_by_users|length }}&nbsp;&nbsp;&nbsp;&nbsp;评论：{{ book.comments|length }}
+                <br/>
+                库存：{{ book.quantity }}
+            </small>
         </div>
     </div>
 {% endfor %}

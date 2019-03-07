@@ -3,6 +3,7 @@ from flask import request, render_template, redirect, url_for, session, flash, j
 from sqlalchemy import or_
 from functools import wraps
 import os
+from datetime import timedelta
 
 from forms import *
 from models import *
@@ -53,14 +54,17 @@ def index():
     return render_template('index.html', paginate=paginate)
 
 
-# 新书
-@app.route('/new_books')
-def rank_new_book():
+# 新书 & 销量 排行
+@app.route('/rank_books_<rank_type>')
+def rank_book(rank_type):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
     page = get_page()
-    paginate = Book.query.paginate(page, BOOK_PAGE_SIZE, False)
+    if rank_type == 'new':
+        paginate = get_new_books_query().paginate(page, BOOK_PAGE_SIZE)
+    else:
+        paginate = get_sales_books_query().paginate(page, BOOK_PAGE_SIZE)
     return render_template('book.html', paginate=paginate, url=request.path)
 
 
@@ -219,6 +223,20 @@ def update_password(form):
         return redirect(request.path)
 
 
+# 收藏 & 取消收藏 图书
+@app.route('/like_change_<book_id>')
+@check_login
+def like_change(book_id):
+    user = get_user()
+    book = Book.query.filter(book_id == Book.id).one()
+    if book in user.favorite_books:
+        user.favorite_books.remove(book)
+    else:
+        user.favorite_books.append(book)
+    db.session.commit()
+    return ''
+
+
 # 添加到购物车
 @app.route('/add_to_cart')
 def add_to_cart():
@@ -244,7 +262,8 @@ def add_to_cart():
     db.session.commit()
     flash('添加成功')
     url = request.referrer
-    url = deal_url(url, scroll_pos)
+    if scroll_pos:
+        url = deal_url(url, scroll_pos)
     return redirect(url)
 
 
@@ -360,9 +379,9 @@ def order_cancel(order_id):
     order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
     if order.state == '待付款' or order.state == '待发货':
         order.state = '已取消'
+        db.session.commit()
     else:
         abort(404)
-    db.session.commit()
     return redirect(url_for(order_detail))
 
 
@@ -372,6 +391,9 @@ def order_complete(order_id):
     order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
     if order.state == '待收货':
         order.state = '已完成'
+        for item in order.order_items:
+            item.book.sales_volume += item.quantity
+        db.session.commit()
     else:
         abort(404)
     return redirect(url_for(order_detail))
@@ -383,6 +405,7 @@ def order_apply_return(order_id):
     order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
     if order.state == '已完成':
         order.state = '申请退货'
+        db.session.commit()
     else:
         abort(404)
     return redirect(url_for(order_detail))
@@ -548,7 +571,11 @@ def save_update_book():
         now_time = datetime.now().strftime("%Y%m%d%H%M%S")
         path = base_dir + "/static/image/books/"
         random_filename = now_time + image.filename
+        save_path = 'image/books/'+random_filename
         file_path = path + random_filename
+        image.save(file_path)
+    else:
+        save_path = 'image/icon.png'
     if book_id:
         book = Book.query.filter(Book.id == book_id).one()
         book.book_classify_id = book_classify_id
@@ -560,14 +587,13 @@ def save_update_book():
         book.press = press
         book.introduction = introduction
         if image:
-            book.image_url = random_filename
+            book.image_url = save_path
     else:
         book = Book(name=book_name, book_classify_id=book_classify_id, quantity=quantity, price=price, author=author,
-                    publish_time=publish_time, press=press, introduction=introduction, image_url=random_filename)
+                    publish_time=publish_time, press=press, introduction=introduction, image_url=save_path)
         db.session.add(book)
-    image.save(file_path)
     db.session.commit()
-    return ''
+    return redirect(request.referrer)
 
 
 # 删除图书
@@ -610,7 +636,10 @@ def admin_query(query_type='', query_str=''):
     # 用来为分页拼接地址
     url = url_for('admin_query', query_type=query_type, query_str=query_str)
     if query_type == 'order':
-        pass
+        paginate = OrderTable.query.join(User, OrderTable.user_id == User.id)\
+            .filter(or_(User.username.like('%' + query_str + '%'), OrderTable.id == str_to_int))\
+            .order_by(OrderTable.create_time.desc()).paginate(page, PAGE_SIZE)
+        return render_template('admin_query.html', paginate=paginate, url=url)
     elif query_type == 'book':
         paginate = Book.query.filter(or_(Book.name.like('%' + query_str + '%'), Book.id == int(str_to_int))).paginate(
             page, PAGE_SIZE, False)
@@ -704,18 +733,44 @@ def validate_login():
             return redirect(url_for('admin_view'))
 
 
+# 获取新书查询
+def get_new_books_query():
+    now = datetime.now()
+    delta = timedelta(days=365)
+    start_time = now - delta
+    new_books_query = Book.query.filter(Book.publish_time > start_time).order_by(Book.publish_time.desc())
+    return new_books_query
+
+
+# 获取销量 查询
+def get_sales_books_query():
+    sales_books_query = Book.query.order_by(Book.sales_volume.desc())
+    return sales_books_query
+
+
+# 获取 收藏 查询
+# def get_rank_like_books_query():
+#     like_books_query = Book.query.order_by()
+
+
 # 保存上下文变量
 @app.context_processor
 def my_context_processor():
     book_classifies = BookClassify.query.all()
+    new_books = get_new_books_query().all()
+    sales_books = get_sales_books_query().all()
     my_dict = {}
     user = get_user()
     if user:
         my_dict.update(user=user)
         if not user.admin:
             my_dict.update(book_classifies=book_classifies)
+            my_dict.update(new_books=new_books)
+            my_dict.update(sales_books=sales_books)
     else:
         my_dict.update(book_classifies=book_classifies)
+        my_dict.update(new_books=new_books)
+        my_dict.update(sales_books=sales_books)
     return my_dict
 
 
@@ -726,10 +781,10 @@ def error_no_login(error):
 
 
 @app.errorhandler(404)
-def error_404():
+def error_404(error):
     return '找不到页面'
 
 
 @app.errorhandler(500)
-def error_500():
+def error_500(error):
     return '服务器去吃饭了，请稍后再试'

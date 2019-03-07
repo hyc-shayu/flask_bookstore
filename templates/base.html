@@ -63,6 +63,28 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
+
+{% block fixed_div %}
+    <div class="base-page-fixed show_modal">
+        <div class="list-group">
+            <a href="{{ url_for('rank_book', rank_type='new') }}" class="list-group-item list-group-item-success">新书上架</a>
+            {% for book in new_books[:5] %}
+                <a href="javascript:void(0);" class="list-group-item" data-toggle="modal"
+                   data-target="#modal-comment-book"
+                   data-url="{{ url_for('book_detail_customer',book_id=book.id) }}">{{ book.name }}</a>
+            {% endfor %}
+        </div>
+        <div class="list-group">
+            <a href="{{ url_for('rank_book', rank_type='sales') }}" class="list-group-item list-group-item-success">畅销排行</a>
+            {% for book in sales_books[:5] %}
+                <a href="javascript:void(0);" class="list-group-item" data-toggle="modal"
+                   data-target="#modal-comment-book"
+                   data-url="{{ url_for('book_detail_customer',book_id=book.id) }}">{{ book.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
 {# 滚动荧幕 #}
 {% block carousel %}
     <div class="container">
@@ -111,9 +133,6 @@
 <div class="container base-center main-div" style="margin-top: 15px">
     <div class="container left pull-left">
         <ul class="nav nav-pills nav-stacked">
-            <li role="presentation" class="base-active active"><a href="{{ url_for('rank_new_book') }}">新书排行</a></li>
-            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">畅销排行</a></li>
-            <li role="presentation" class="base-active active"><a href="{{ url_for('index') }}">月销排行</a></li>
             {% for classify in book_classifies %}
                 <li role="presentation" class="base-active active"><a
                         href="{{ url_for('books_view_classify', book_classify_id=classify.id) }}">{{ classify.name }}</a>
@@ -148,7 +167,7 @@
         $(function () {
             document.documentElement.scrollTop = parseInt({{ g.scroll_pos }});
             document.body.scrollTop = parseInt({{ g.scroll_pos }});
-            alert('{{ get_flashed_messages()|first }}')
+            setTimeout("alert('{{ get_flashed_messages()|first }}')", 100);
         })
     </script>
 {% endif %}

@@ -44,12 +44,11 @@
                     <td style="vertical-align: middle;white-space:normal">{{ order.phone }}</td>
                     <td style="vertical-align: middle;white-space:normal">{{ order.state }}</td>
                     <td style="vertical-align: middle;white-space:normal">{{ order.create_time }}</td>
-                    <td style="vertical-align: middle;white-space:normal">
-                        <ul class="list-group" style="margin: 0;">
+                    <td style="text-align: left;white-space:normal">
+                        <ul style="margin: 0;">
                             {% for item in order.order_items[:4] %}
-                                <li class="list-group-item">
-                                    <span class="badge">{{ item.quantity }}</span>
-                                    {{ item.book.name }}
+                                <li>
+                                    {{ item.book.name }} &nbsp;&nbsp;*&nbsp;&nbsp; {{ item.quantity }}
                                 </li>
                             {% endfor %}
                         </ul>

@@ -54,6 +54,30 @@ $(function () {
             })
     });
 
+    //收藏按钮
+    $('body').off('click', 'a.a-like').on('click','a.a-like',function () {
+        let text = $(this).text();
+        let url = $(this).data('url');
+        let sel_id = $(this).data('id');
+        let count = parseInt($('.'+sel_id+':first').text());
+        let a_like = $('a[data-id='+sel_id+']')
+        if (text=='收藏') {
+            a_like.text('取消收藏');
+            a_like.removeClass('btn-info');
+            a_like.addClass('btn-danger');
+            $('.'+sel_id).text(count+1);
+        }
+        else{
+            a_like.text('收藏');
+            a_like.removeClass('btn-danger');
+            a_like.addClass('btn-info');
+            $('.'+sel_id).text(count-1);
+        }
+        $.ajax({
+            type:'GET',
+            url:url
+        })
+    });
 
 });
 //设置回复目标id

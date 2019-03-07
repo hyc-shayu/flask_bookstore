@@ -1,0 +1,38 @@
+<div class="col-sm-6 col-md-3">
+    <div class="thumbnail show_modal">
+        <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+           data-url="{{ url_for('book_detail_customer',book_id=book.id) }}"
+           class="thumbnail">
+            <img src="{{ url_for('static', filename=book.image_url) }}" alt=""
+                 style="height: 200px; ">
+        </a>
+        <div class="caption">
+            <h4>{{ book.name }}&nbsp;&nbsp;&nbsp;<strong class="pull-right">￥{{ book.price }}</strong></h4>
+            <small>销售量：{{ book.sales_volume }}&nbsp;&nbsp;&nbsp;&nbsp;收藏数：
+                <span class="like_count_{{ book.id }}">{{ book.liked_by_users|length }}</span>
+                <br/>
+                评论：{{ book.comments|length }}&nbsp;&nbsp;&nbsp;&nbsp;库存：{{ book.quantity }}
+            </small>
+            <p>
+                {% if user %}
+                    {% if book in user.favorite_books %}
+                        <a href="javaScript:;"
+                           data-url="{{ url_for('like_change', book_id=book.id) }}"
+                           data-id="like_count_{{ book.id }}"
+                           class="btn btn-danger a-like pull-right" role="button">取消收藏</a>
+                    {% else %}
+                        <a href="javaScript:;"
+                           data-url="{{ url_for('like_change', book_id=book.id) }}"
+                           data-id="like_count_{{ book.id }}"
+                           class="btn btn-info a-like pull-right" role="button">收藏</a>
+                    {% endif %}
+                {% else %}
+                    <a class="btn btn-info pull-right" href="{{ url_for('login') }}">收藏</a>
+                {% endif %}
+                <a href="{{ url_for('add_to_cart') }}?book_id={{ book.id }}"
+                   class="btn btn-primary a_add_to_cart pull-right" style="margin-right: 5px;" role="button">加入购物车</a>
+            </p>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+</div>

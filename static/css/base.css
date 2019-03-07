@@ -37,3 +37,10 @@ tr td {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.base-page-fixed{
+    position: fixed;
+     top: 200px;
+    right: 50px;
+    width: 200px;
+}

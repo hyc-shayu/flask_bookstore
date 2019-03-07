@@ -1,6 +1,6 @@
 {% extends 'admin_book_classify_manage.html' %}
 {% block page %}
     {% if paginate.pages > 1 %}
-        {{ macros.pagination_widget_href_get(paginate,url) }}
+        {{ macros.pagination_data_url_page(paginate,url) }}
     {% endif %}
 {% endblock %}
