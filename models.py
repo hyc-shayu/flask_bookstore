@@ -120,6 +120,7 @@ class Book(db.Model):
     book_classify_id = db.Column(db.Integer, db.ForeignKey('book_classify.id'))
 
     comments = db.relationship('Comment', cascade='all')
+    favorite_user_count = db.Column(db.Integer,default=0)
     liked_by_users = db.relationship('User', secondary=user_favorite_book_table, back_populates='favorite_books')
 
 

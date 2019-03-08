@@ -1,31 +1,49 @@
-
 {% import '_macros.html' as macros %}
+<div id="sort_bar" style="margin-bottom: 10px">
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='time') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">时间<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='time_up') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">时间<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='sale') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">销量<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='sale_up') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">销量<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='like') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">收藏<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='like_up') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">收藏<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='price') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">价格<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+    <a data-href="{{ url_for('admin_comments_manage_by_book', sort_type='price_up') }}?page={{ request.args.get('page') }}"
+       class="btn btn-default btn-xs" href="javascript:;">价格<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+</div>
 <div class="row">
     {% for book in paginate.items %}
-    <div class="col-xs-6 col-md-3">
-        <div class="thumbnail show_modal">
-            <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
-               data-url="{{ url_for('book_detail',book_id=book.id) }}"
-               class="thumbnail">
-                <img src="{{ url_for('static',filename=book.image_url) }}" alt="{{ book.name }}"
-                     style="height: 200px;display: block;">
-            </a>
-            <h4 class="text-center">{{ book.name }}</h4>
-            <small>销售量：{{ book.sales_volume }}&nbsp;&nbsp;&nbsp;&nbsp;价格：￥{{ book.price }}
-                <br/>
-                收藏数：{{ book.liked_by_users|length }}&nbsp;&nbsp;&nbsp;&nbsp;评论：{{ book.comments|length }}
-                <br/>
-                库存：{{ book.quantity }}
-            </small>
+        <div class="col-xs-6 col-md-3">
+            <div class="thumbnail show_modal">
+                <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+                   data-url="{{ url_for('book_detail',book_id=book.id) }}"
+                   class="thumbnail">
+                    <img src="{{ url_for('static',filename=book.image_url) }}" alt="{{ book.name }}"
+                         style="height: 200px;display: block;">
+                </a>
+                <h4 class="text-center">{{ book.name }}</h4>
+                <small>销售量：{{ book.sales_volume }}&nbsp;&nbsp;&nbsp;&nbsp;价格：￥{{ book.price }}
+                    <br/>
+                    收藏数：{{ book.liked_by_users|length }}&nbsp;&nbsp;&nbsp;&nbsp;评论：{{ book.comments|length }}
+                    <br/>
+                    库存：{{ book.quantity }}
+                </small>
+            </div>
         </div>
-    </div>
-{% endfor %}
+    {% endfor %}
 </div>
-{% block page %}
-    {% if paginate.pages > 1 %}
-        {{ macros.pagination_widget(paginate,'admin_comments_manage_by_book') }}
-    {% endif %}
-{% endblock %}
+{% if paginate.pages > 1 %}
+    {{ macros.pagination_data_url_page(paginate,request.path) }}
+{% endif %}
 {#    模态框 #}
 <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
      aria-labelledby="exampleModalLabel">

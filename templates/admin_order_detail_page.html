@@ -59,11 +59,13 @@
             </div>
             <div class="form-group">
                 <label for="input_recipient_address">收货地址</label>
-                <input type="text" class="form-control" id="input_recipient_address" name="address" value="{{ order.address }}">
+                <input type="text" class="form-control" id="input_recipient_address" name="address"
+                       value="{{ order.address }}">
             </div>
             <div class="form-group">
                 <label for="input_recipient_phone">联系电话</label>
-                <input type="text" class="form-control" id="input_recipient_phone" name="phone" value="{{ order.phone }}">
+                <input type="text" class="form-control" id="input_recipient_phone" name="phone"
+                       value="{{ order.phone }}">
             </div>
             <button type="submit" class="btn" di>确定</button>
         </fieldset>
@@ -71,7 +73,7 @@
     </form>
     {% if order.state == '待发货' or order.state == '申请退货' or order.state == '同意退货' or order.state == '拒绝退货' %}
         <form action="{{ url_for('order_update', order_id=order.id) }}" method="post">
-            <select id="select_state" class="form-control" name="state">
+            <select id="select_state" class="form-control pull-left" name="state" style="width: 30%;">
                 {% if order.state == '待发货' %}
                     <option value="待发货">待发货</option>
                     <option value="待收货">待收货</option>
@@ -87,7 +89,11 @@
                 <option value="已完成">已完成</option>
                 <option value="已取消">已取消</option>
             </select>
-            <input class="btn btn-primary" type="submit" value="修改"/>
+            <input class="btn btn-primary pull-left" type="submit" value="修改"/>
         </form>
     {% endif %}
+    {#    模态框 #}
+    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+         aria-labelledby="exampleModalLabel">
+    </div>
 {% endblock %}

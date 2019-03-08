@@ -62,19 +62,35 @@
             <div class="col-xs-3 pull-right" id="myScrollspy">
                 <ul class="nav nav-tabs nav-stacked" data-spy="affix" data-offset-top="125">
                     <li class="active"><a href="#section-1">基本信息</a></li>
+                    <li><a href="#section-4">我的收藏</a></li>
                     <li><a href="#section-2">收货地址</a></li>
                     <li><a href="#section-3">修改密码</a></li>
                 </ul>
             </div>
         {% endif %}
         <div class="col-xs-9">
-            <h3 id="section-1" class="title">{{ user.username }}的个人中心</h3>
-            <div class="container container35">
+            <h3 class="title">{{ user.username }}的个人中心</h3>
+            <div class="container" style="width: 100%;">
                 <div style="margin-bottom: 50px">
-                    <h4 class="title">基本信息</h4>
+                    <h4 id="section-1" class="title">基本信息</h4>
                     {{ render_form(form) }}
                 </div>
                 {% if not user.admin %}
+                    <div style="margin-bottom: 50px">
+                        <h4 id="section-4" class="title">我的收藏</h4>
+                        <div class="row show_modal">
+                            {% for book in user.favorite_books %}
+                                <div class="col-sm-6 col-md-3">
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+                                       data-url="{{ url_for('book_detail_customer',book_id=book.id) }}"
+                                       class="thumbnail">
+                                        <img src="{{ url_for('static', filename=book.image_url) }}" alt=""
+                                             style="height: 200px; ">
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <div style="margin-bottom: 50px">
                         <h4 id="section-2" class="title">收货地址</h4>
                         {% if user.recipients %}
@@ -115,6 +131,10 @@
 {% endblock %}
 
 {% block book_madol %}
+    {#    模态框 #}
+    <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
+         aria-labelledby="exampleModalLabel">
+    </div>
     {#    模态框 #}
     <div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-address"
          aria-labelledby="exampleModalLabel">

@@ -24,7 +24,7 @@
             </dl>
         </div>
         <div class="modal-footer">
-            <form id="pay_form" action="/pay" method="post">
+            <form id="pay_form" action="{{ url_for('pay') }}" method="post">
                 <input type="hidden" name="order_id" value="{{ order.id }}">
                 <input id="inp_submit" type="submit" class="btn btn-success" value="支付" data-dismiss="modal"/>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>

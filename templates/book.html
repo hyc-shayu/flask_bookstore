@@ -5,6 +5,35 @@
 {% endblock %}
 
 {% block main %}
+    {% if classify %}
+        {% set sort_url = 'books_view_classify' %}
+        {% set my_dict = {'book_classify_id':classify.id} %}
+    {% else %}
+        {% set sort_url = 'books_query' %}
+        {% set my_dict = {'query_str':query_str} %}
+    {% endif %}
+
+    <div style="margin-bottom: 10px">
+        <a href="{{ url_for(sort_url, sort_type='time', **my_dict )}}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">时间<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+        <a href="{{ url_for(sort_url, sort_type='time_up', **my_dict )}}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">时间<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+        <a href="{{ url_for(sort_url, sort_type='sale', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">销量<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+        <a href="{{ url_for(sort_url, sort_type='sale_up', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">销量<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+        <a href="{{ url_for(sort_url, sort_type='like', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">收藏<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+        <a href="{{ url_for(sort_url, sort_type='like_up', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">收藏<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+
+        <a href="{{ url_for(sort_url, sort_type='price', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">价格<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
+        <a href="{{ url_for(sort_url, sort_type='price_up', **my_dict) }}?page={{ request.args.get('page') }}"
+           class="btn btn-default btn-xs">价格<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
+    </div>
     {% if title %}
         <h2>{{ title }}</h2>
     {% endif %}

@@ -61,7 +61,8 @@ $(function () {
                     data: data,
                     dataType: 'html',
                     success: function (data) {//返回数据根据结果进行相应的处理
-                        $(".modal-book-detail:first").html(data);
+                        if(data)
+                            $(".modal-book-detail:first").html(data);
                     },
                     error: function () {
                         alert('error');
@@ -71,7 +72,7 @@ $(function () {
         // 隐藏模态框时，刷新原来的div
         $('.modal-book-detail:first').off('hidden.bs.modal').on('hidden.bs.modal', function () {
             let url = $("div.main-div .aj .active:first").data('href');
-            if (url)
+            if (url && url.indexOf('book')==-1)
                 $("div.main").load(url);
         });
     });
@@ -152,6 +153,15 @@ $(function () {
         let panel_body = $(sel).find('div:first');
         let url = $(this).data('url');
         append_ajax(panel_body, url);
+    });
+
+    //管理员修改订单信息
+    $("#alter_input").off('click').on('click',function () {
+        let fieldset = $('#fieldset_recipient');
+        if(fieldset.attr('disabled'))
+            fieldset.removeAttr('disabled');
+        else
+            fieldset.attr('disabled', true);
     });
 });
 

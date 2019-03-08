@@ -1,6 +1,6 @@
 from app import app
 from flask import request, render_template, redirect, url_for, session, flash, jsonify, g, abort
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from functools import wraps
 import os
 from datetime import timedelta
@@ -63,37 +63,46 @@ def rank_book(rank_type):
     page = get_page()
     if rank_type == 'new':
         paginate = get_new_books_query().paginate(page, BOOK_PAGE_SIZE)
+        title = '新书排行'
     else:
         paginate = get_sales_books_query().paginate(page, BOOK_PAGE_SIZE)
-    return render_template('book.html', paginate=paginate, url=request.path)
+        title = '畅销排行'
+    return render_template('book.html', paginate=paginate, url=request.path, title=title)
 
 
 # 图书分类页面
+@app.route('/book_classify_<int:book_classify_id>_<sort_type>')
 @app.route('/book_classify_<int:book_classify_id>')
-def books_view_classify(book_classify_id):
+def books_view_classify(book_classify_id,sort_type='sale'):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
     page = get_page()
     classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
-    paginate = Book.query.filter(Book.book_classify_id == book_classify_id).paginate(page, BOOK_PAGE_SIZE, False)
+    query = Book.query.filter(Book.book_classify_id == book_classify_id)
+    query = book_sort_query(query, sort_type)
+    paginate = query.paginate(page, BOOK_PAGE_SIZE)
     # 分页地址
-    url = request.path
-    return render_template('book.html', paginate=paginate, url=url, title=classify.name)
+    url = url_for('books_view_classify', book_classify_id=book_classify_id, sort_type=sort_type)
+    return render_template('book.html', paginate=paginate, url=url, title=classify.name, classify=classify)
 
 
 # 用户搜索图书
-@app.route('/books_query_<query_str>')
+@app.route('/books_query_<query_str>-<sort_type>')
 @app.route('/books_query')
-def books_query(query_str=None):
+def books_query(query_str=None,sort_type='sale'):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
     page = get_page()
     if not query_str:
         query_str = request.args.get('search_str')
-    paginate = Book.query.filter(Book.name.like('%' + query_str + '%')).paginate(page, BOOK_PAGE_SIZE, False)
-    return render_template('book.html', paginate=paginate, url=url_for('books_query', query_str=query_str))
+    if query_str == '':
+        query_str = '%'
+    query = Book.query.filter(Book.name.like('%' + query_str + '%'))
+    query = book_sort_query(query, sort_type)
+    paginate = query.paginate(page, BOOK_PAGE_SIZE, False)
+    return render_template('book.html', paginate=paginate, query_str=query_str, url=url_for('books_query', query_str=query_str, sort_type=sort_type))
 
 
 # 从url获取页数
@@ -231,8 +240,10 @@ def like_change(book_id):
     book = Book.query.filter(book_id == Book.id).one()
     if book in user.favorite_books:
         user.favorite_books.remove(book)
+        book.favorite_user_count -= 1
     else:
         user.favorite_books.append(book)
+        book.favorite_user_count += 1
     db.session.commit()
     return ''
 
@@ -614,11 +625,41 @@ def admin_comments_view(page=1):
 
 
 # 查看图书——局部刷新
-@app.route('/admin/comments_manage_by_book_<int:page>', methods=['GET', 'POST'])
+@app.route('/admin/comments_manage_by_book_<sort_type>', methods=['GET', 'POST'])
 @app.route('/admin/comments_manage_by_book', methods=['GET', 'POST'])
-def admin_comments_manage_by_book(page=1):
-    paginate = Book.query.paginate(page, PAGE_SIZE, False)
+def admin_comments_manage_by_book(sort_type='sale'):
+    page = get_page()
+    query = Book.query
+    query = book_sort_query(query, sort_type)
+    paginate = query.paginate(page, PAGE_SIZE, False)
     return render_template('admin_comments_book.html', paginate=paginate)
+
+
+# 排序查询方法
+def book_sort_query(query, sort_type):
+    if 'sale' in sort_type:
+        if sort_type == 'sale':
+            query = query.order_by(Book.sales_volume.desc())
+        else:
+            query = query.order_by(Book.sales_volume)
+    elif 'time' in sort_type:
+        if sort_type == 'time':
+            query = query.order_by(Book.publish_time.desc())
+        else:
+            query = query.order_by(Book.publish_time)
+    elif 'like' in sort_type:
+        if sort_type == 'like':
+            query = query.order_by(Book.favorite_user_count.desc())
+        else:
+            query = query.order_by(Book.favorite_user_count)
+    elif 'price' in sort_type:
+        if sort_type == 'price':
+            query = query.order_by(Book.price.desc())
+        else:
+            query = query.order_by(Book.price)
+    else:
+        abort(404)
+    return query
 
 
 # 管理员 搜索  图书|图书分类|订单

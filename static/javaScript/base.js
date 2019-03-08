@@ -79,6 +79,12 @@ $(function () {
         })
     });
 
+    //点击排序
+    $('div.main').off('click', '#sort_bar a').on('click','#sort_bar a',function () {
+        let url = $(this).data('href');
+        $('div.main:first').load(url);
+    });
+
 });
 //设置回复目标id
 function setTarget(target_user_id,target_user_username) {
