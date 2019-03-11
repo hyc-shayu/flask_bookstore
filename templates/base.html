@@ -36,7 +36,7 @@
                 <li class="base-active nav-active"><a href="{{ url_for('index') }}"><span
                         class="glyphicon glyphicon-home"
                         aria-hidden="true"></span>首页 </a></li>
-                {#                <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>#}
+                {#   <li class="base-active nav-active"><a href="{{ url_for('admin_view') }}">管理员</a></li>#}
             </ul>
             <form class="navbar-form navbar-left" action="{{ url_for('books_query') }}">
                 <div class="form-group">
@@ -100,16 +100,16 @@
             <div class="carousel-inner center-block" role="listbox" style="height: 300px;width: 60%">
                 <div class="item active" align="center" style="height: 100%">
                     <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
-                    <div class="carousel-caption">
-                        ...
-                    </div>
+{#                    <div class="carousel-caption">#}
+{#                        ...#}
+{#                    </div>#}
                 </div>
-                <div class="item" align="center" style="height: 100%">
-                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
-                    <div class="carousel-caption">
-                        ...
+                {% for img in carousels %}
+                    <div class="item" align="center" style="height: 100%">
+                        <img src="{{ img.url }}" style="height: 100%" alt="">
                     </div>
-                </div>
+                {% endfor %}
+
                 <div class="item" align="center" style="height: 100%">
                     <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
                     <div class="carousel-caption">

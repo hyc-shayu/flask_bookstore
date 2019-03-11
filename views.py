@@ -3,6 +3,7 @@ from flask import request, render_template, redirect, url_for, session, flash, j
 from sqlalchemy import or_, func
 from functools import wraps
 import os
+import shutil
 from datetime import timedelta
 
 from forms import *
@@ -14,6 +15,8 @@ BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
+BOOK_PATH = "static/image/books/"
+ICON_PATH = "static/image/icon.png"
 
 # 自定义检查登录错误类
 class CheckLoginError(Exception):
@@ -21,25 +24,25 @@ class CheckLoginError(Exception):
 
 
 # 装饰器 检查用户登录状态
-def check_login(func):
-    @wraps(func)
+def check_login(fun):
+    @wraps(fun)
     def wrapper(*args, **kwargs):
         if not get_user():
             raise CheckLoginError
-        return func(*args, **kwargs)
+        return fun(*args, **kwargs)
     return wrapper
 
 
 # 装饰器 检查管理员登录状态
-def check_admin(func):
-    @wraps(func)
+def check_admin(fun):
+    @wraps(fun)
     def wrapper(*args, **kwargs):
         user = get_user()
         if not user:
             raise CheckLoginError
         if not user.admin:
             raise  CheckLoginError
-        return func(*args, **kwargs)
+        return fun(*args, **kwargs)
     return wrapper
 
 
@@ -513,6 +516,8 @@ def book_classify_add():
     book_classify = BookClassify(name=name)
     db.session.add(book_classify)
     db.session.commit()
+    classify_path = os.path.join(base_dir, BOOK_PATH, book_classify.name)
+    os.mkdir(classify_path)
     return ''
 
 
@@ -522,6 +527,8 @@ def book_classify_del(book_classify_id):
     book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
     db.session.delete(book_classify)
     db.session.commit()
+    classify_path = os.path.join(base_dir, BOOK_PATH, book_classify.name)
+    shutil.rmtree(classify_path)
     return ''
 
 
@@ -529,8 +536,10 @@ def book_classify_del(book_classify_id):
 @app.route('/admin/book_classify_update_<int:book_classify_id>', methods=["POST"])
 def book_classify_update(book_classify_id):
     book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
+    old_name = book_classify.name
     book_classify.name = request.form.get("name")
     db.session.commit()
+    os.rename(os.path.join(base_dir, BOOK_PATH, old_name), os.path.join(base_dir, BOOK_PATH, book_classify.name))
     return ''
 
 
@@ -579,14 +588,16 @@ def save_update_book():
 
     image = request.files.get('image')
     if image:
+        classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
         now_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        path = base_dir + "/static/image/books/"
         random_filename = now_time + image.filename
-        save_path = 'image/books/'+random_filename
-        file_path = path + random_filename
+        save_path = os.path.join(BOOK_PATH, classify.name, random_filename)
+        file_path = os.path.join(base_dir, BOOK_PATH, classify.name, random_filename)
         image.save(file_path)
     else:
-        save_path = 'image/icon.png'
+        save_path = ICON_PATH
+
+    old_image_url = None
     if book_id:
         book = Book.query.filter(Book.id == book_id).one()
         book.book_classify_id = book_classify_id
@@ -597,6 +608,7 @@ def save_update_book():
         book.publish_time = publish_time
         book.press = press
         book.introduction = introduction
+        old_image_url = book.image_url
         if image:
             book.image_url = save_path
     else:
@@ -604,6 +616,8 @@ def save_update_book():
                     publish_time=publish_time, press=press, introduction=introduction, image_url=save_path)
         db.session.add(book)
     db.session.commit()
+    if old_image_url and old_image_url != ICON_PATH:
+            os.remove(os.path.join(base_dir, old_image_url))
     return redirect(request.referrer)
 
 
@@ -611,8 +625,10 @@ def save_update_book():
 @app.route('/admin/del_book_<int:book_id>', methods=['POST'])
 def del_book(book_id):
     book = Book.query.filter(Book.id == book_id).one()
+    path = book.image_url
     db.session.delete(book)
     db.session.commit()
+    os.remove(path)
     return ''
 
 
@@ -742,6 +758,12 @@ def comment_reply():
     db.session.add(comment)
     db.session.commit()
     return jsonify()
+
+
+# 管理滚动图片
+@app.route('/admin/carousel')
+def admin_carousel():
+    return render_template('admin_carousel.html')
 
 
 # 用户评论

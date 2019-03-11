@@ -1,0 +1,42 @@
+{% extends 'admin_base.html' %}
+{% block head %}
+{% endblock %}
+
+{% block title %}
+    滚动荧幕图片管理
+{% endblock %}
+
+{% block main %}
+    <table class="table table-hover">
+        <tbody>
+        {% for carousel in carousels %}
+            <tr>
+                <td class="show_modal" style="vertical-align:middle;width: 30%">
+                    <a href="javascript:void(0);"
+                       data-url=""
+                       class="thumbnail">
+                        <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                             style="height: 100px;">
+                    </a>
+                </td>
+                <td><a class="btn">上移<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> </td>
+                <td><a class="btn">下移<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a> </td>
+                <td><a class="btn">删除</a> </td>
+            </tr>
+        {% endfor %}
+         <tr>
+                <td class="show_modal" style="vertical-align:middle;width: 30%">
+                    <a href="javascript:void(0);"
+                       data-url=""
+                       class="thumbnail">
+                        <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                             style="height: 100px;">
+                    </a>
+                </td>
+                <td><a class="btn">上移<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> </td>
+                <td><a class="btn">下移<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a> </td>
+                <td><a class="btn">删除</a> </td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

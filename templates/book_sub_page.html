@@ -3,7 +3,7 @@
         <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
            data-url="{{ url_for('book_detail_customer',book_id=book.id) }}"
            class="thumbnail">
-            <img src="{{ url_for('static', filename=book.image_url) }}" alt=""
+            <img src="{{ book.image_url }}" alt=""
                  style="height: 200px; ">
         </a>
         <div class="caption">

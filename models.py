@@ -97,7 +97,7 @@ class CartItem(db.Model):
 class BookClassify(db.Model):
     __tablename__ = 'book_classify'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False, unique=True)
 
     books = db.relationship('Book', cascade='all, delete-orphan')
 
@@ -140,3 +140,9 @@ class Comment(db.Model):
     # book
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
     book = db.relationship('Book')
+
+
+class Carousel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    url = db.Column(db.String(255))
+    sort = db.Column(db.Integer, default=id)

@@ -27,7 +27,7 @@
                 <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
                    data-url="{{ url_for('book_detail',book_id=book.id) }}"
                    class="thumbnail">
-                    <img src="{{ url_for('static',filename=book.image_url) }}" alt="{{ book.name }}"
+                    <img src="{{ book.image_url }}" alt="{{ book.name }}"
                          style="height: 200px;display: block;">
                 </a>
                 <h4 class="text-center">{{ book.name }}</h4>
