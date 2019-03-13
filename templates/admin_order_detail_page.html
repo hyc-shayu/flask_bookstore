@@ -81,10 +81,12 @@
                     <option value="申请退货">申请退货</option>
                     <option value="同意退货">同意退货</option>
                     <option value="拒绝退货">拒绝退货</option>
-                {% else %}
+                {% elif order.state == '同意退货' %}
                     <option value="同意退货">同意退货</option>
-                    <option value="拒绝退货">拒绝退货</option>
                     <option value="已退货">已退货</option>
+                {% else %}
+                    <option value="拒绝退货">拒绝退货</option>
+                    <option value="同意退货">同意退货</option>
                 {% endif %}
                 <option value="已完成">已完成</option>
                 <option value="已取消">已取消</option>

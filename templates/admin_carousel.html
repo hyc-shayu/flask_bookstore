@@ -11,35 +11,32 @@
     <table class="table table-hover">
         <tbody>
         {% for carousel in carousels %}
-            <tr  class="opt-carousel-td" data-id="{{ carousel.id }}" data-sort="{{ carousel.sort }}">
+            <tr class="opt-carousel-td" data-id="{{ carousel.id }}" data-sort="{{ carousel.sort }}">
                 <td class="show_modal" style="vertical-align:middle;width: 30%">
-                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                    <img src="{{ carousel.url }}" alt=""
                          style="height: 200px;">
                 </td>
                 <td style="vertical-align: middle;">
-                    <button class="btn pull-right carousel-del" data-url="{{ url_for('admin_del_carousel', id=carousel.id) }}">删除</button>
-                    <button class="btn pull-right move-down">下移<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></button>
+                    <button class="btn pull-right carousel-del"
+                            data-url="{{ url_for('admin_del_carousel', id=carousel.id) }}">删除
+                    </button>
+                    <button class="btn pull-right move-down">下移<span class="glyphicon glyphicon-arrow-down"
+                                                                     aria-hidden="true"></span></button>
                     <button class="btn pull-right move-up">上移<span class="glyphicon glyphicon-arrow-up"
-                        aria-hidden="true"></span></button>
+                                                                   aria-hidden="true"></span></button>
                 </td>
             </tr>
         {% endfor %}
-        <tr>
-            <td class="show_modal" style="vertical-align:middle;width: 30%;">
-                <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
-                     style="height: 170px;">
-            </td>
-            <td style="vertical-align: middle;">
-                <a class="btn pull-right">删除</a>
-                <a class="btn pull-right">下移<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
-                <a class="btn pull-right">上移<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
-            </td>
-        </tr>
         </tbody>
     </table>
-    <form method="post" action="" enctype="multipart/form-data">
-        <input class="btn pull-right" type="file" id="carousel-image" name="image">
+    <form method="post" action="{{ url_for('admin_add_carousel') }}" enctype="multipart/form-data">
+        <input class="btn pull-right" type="file" id="carousel-image" name="image"
+               accept="image/gif,image/jpeg,image/jpg,image/png">
         <button type="submit" class="btn pull-right">上传图片</button>
-        <button data-url="{{ url_for('admin_save_carousel_sort') }}" id="save-sort" style="margin-right: 10px;" class="btn pull-right">保存</button>
+        {% if carousels %}
+            <a data-url="{{ url_for('admin_save_carousel_sort') }}" id="save-sort" style="margin-right: 10px;"
+               class="btn pull-right" href="javascript:;">保存
+            </a>
+        {% endif %}
     </form>
 {% endblock %}

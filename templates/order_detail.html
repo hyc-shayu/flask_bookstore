@@ -57,9 +57,9 @@
     {% elif order.state == '待发货' %}
         <a href="{{ url_for('order_cancel', order_id = order.id) }}" class="btn btn-danger pull-right">取消订单</a>
     {% elif order.state == '待收货' %}
-        <a href="#" class="btn btn-success pull-right">确认收货</a>
+        <a href="{{ url_for('order_complete', order_id = order.id) }}" class="btn btn-success pull-right">确认收货</a>
     {% elif order.state == '已完成' %}
-        <a href="#" class="btn btn-warning pull-right">申请退货</a>
+        <a href="{{ url_for('order_apply_return', order_id = order.id) }}" class="btn btn-warning pull-right">申请退货</a>
     {% endif %}
 {% endblock %}
 

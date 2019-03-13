@@ -87,35 +87,24 @@
 
 {# 滚动荧幕 #}
 {% block carousel %}
+    {% if carousels %}
     <div class="container">
         <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
             <!-- Indicators -->
             <ol class="carousel-indicators">
-                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
-                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+                {% for carousel in carousels %}
+                    <li data-target="#carousel-example-generic" data-slide-to="{{ loop.index }}"
+                        {% if loop.first %}class="active"{% endif %}></li>
+                {% endfor %}
             </ol>
 
             <!-- Wrapper for slides -->
             <div class="carousel-inner center-block" role="listbox" style="height: 300px;width: 60%">
-                <div class="item active" align="center" style="height: 100%">
-                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
-{#                    <div class="carousel-caption">#}
-{#                        ...#}
-{#                    </div>#}
-                </div>
                 {% for img in carousels %}
-                    <div class="item" align="center" style="height: 100%">
+                    <div class="item {% if loop.first %}active{% endif %}" align="center" style="height: 100%">
                         <img src="{{ img.url }}" style="height: 100%" alt="">
                     </div>
                 {% endfor %}
-
-                <div class="item" align="center" style="height: 100%">
-                    <img src="{{ url_for('static', filename='image/icon.png') }}" alt="..." style="height: 100%">
-                    <div class="carousel-caption">
-                        ...
-                    </div>
-                </div>
             </div>
 
             <!-- Controls -->
@@ -129,6 +118,7 @@
             </a>
         </div>
     </div>
+    {% endif %}
 {% endblock %}
 <div class="container base-center main-div" style="margin-top: 15px">
     <div class="container left pull-left">

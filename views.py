@@ -1,6 +1,6 @@
 from app import app
 from flask import request, render_template, redirect, url_for, session, flash, jsonify, g, abort
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, and_
 from functools import wraps
 import os
 import shutil
@@ -13,10 +13,12 @@ USER_ID = 'user_id'
 PAGE_SIZE = 12
 BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
+Single = 60
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
-BOOK_PATH = "static/image/books/"
-ICON_PATH = "static/image/icon.png"
+BOOK_PATH = "/static/image/books/"
+ICON_PATH = "/static/image/icon.png"
+CAROUSEL_PATH = '/static/image/carousel/'
 
 # 自定义检查登录错误类
 class CheckLoginError(Exception):
@@ -54,7 +56,8 @@ def index():
     page = get_page()
     paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id)\
         .paginate(page, CLASSIFY_PAGE_SIZE, False)
-    return render_template('index.html', paginate=paginate)
+    carousels = Carousel.query.all()
+    return render_template('index.html', paginate=paginate, carousels=carousels)
 
 
 # 新书 & 销量 排行
@@ -361,7 +364,7 @@ def create_order():
 @app.route('/pay', methods=['POST'])
 def pay():
     order_id = request.form.get('order_id')
-    order = OrderTable.query.filter(order_id == OrderTable.id and OrderTable.user_id == get_user().id).one()
+    order = OrderTable.query.filter(and_(order_id == OrderTable.id, OrderTable.user_id == get_user().id)).one()
     if order.state == '待付款':
         order.state = '待发货'
         db.session.commit()
@@ -383,26 +386,26 @@ def orders_view():
 @app.route('/order_detail')
 def order_detail():
     order_id = request.args.get('order_id')
-    order = OrderTable.query.filter(OrderTable.id == order_id and OrderTable.user_id == get_user().id).one_or_none()
+    order = OrderTable.query.filter(and_(OrderTable.id == order_id, OrderTable.user_id == get_user().id)).one_or_none()
     return render_template('order_detail.html', order=order)
 
 
 # 取消订单
 @app.route('/order_cancel_<order_id>')
 def order_cancel(order_id):
-    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '待付款' or order.state == '待发货':
         order.state = '已取消'
         db.session.commit()
     else:
         abort(404)
-    return redirect(url_for(order_detail))
+    return redirect(url_for('order_detail', order_id=order_id))
 
 
 # 确认收货
 @app.route('/order_complete_<order_id>')
 def order_complete(order_id):
-    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '待收货':
         order.state = '已完成'
         for item in order.order_items:
@@ -410,19 +413,19 @@ def order_complete(order_id):
         db.session.commit()
     else:
         abort(404)
-    return redirect(url_for(order_detail))
+    return redirect(url_for('order_detail', order_id=order_id))
 
 
 # 申请退货
 @app.route('/order_apply_return_<order_id>')
 def order_apply_return(order_id):
-    order = OrderTable.query.filter(OrderTable.user_id == get_user().id and OrderTable.id == order_id).one_or_none()
+    order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '已完成':
         order.state = '申请退货'
         db.session.commit()
     else:
         abort(404)
-    return redirect(url_for(order_detail))
+    return redirect(url_for('order_detail', order_id=order_id))
 
 
 # 管理员相关视图函数
@@ -462,10 +465,13 @@ def order_update(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
     if order:
         order.state = request.form.get('state')
+        if order.state == '已退货':
+            for item in order.order_items:
+                item.book.sales_volume -= item.quantity
         db.session.commit()
     else:
         abort(404)
-    return jsonify()
+    return redirect(url_for('admin_order_detail', order_id=order_id))
     # return redirect(url_for(admin_view))
 
 
@@ -516,7 +522,7 @@ def book_classify_add():
     book_classify = BookClassify(name=name)
     db.session.add(book_classify)
     db.session.commit()
-    classify_path = os.path.join(base_dir, BOOK_PATH, book_classify.name)
+    classify_path = os.path.join(base_dir, BOOK_PATH[1:], book_classify.name)
     os.mkdir(classify_path)
     return ''
 
@@ -527,7 +533,7 @@ def book_classify_del(book_classify_id):
     book_classify = BookClassify.query.filter(BookClassify.id == book_classify_id).one()
     db.session.delete(book_classify)
     db.session.commit()
-    classify_path = os.path.join(base_dir, BOOK_PATH, book_classify.name)
+    classify_path = os.path.join(base_dir, BOOK_PATH[1:], book_classify.name)
     shutil.rmtree(classify_path)
     return ''
 
@@ -539,7 +545,7 @@ def book_classify_update(book_classify_id):
     old_name = book_classify.name
     book_classify.name = request.form.get("name")
     db.session.commit()
-    os.rename(os.path.join(base_dir, BOOK_PATH, old_name), os.path.join(base_dir, BOOK_PATH, book_classify.name))
+    os.rename(os.path.join(base_dir, BOOK_PATH[1:], old_name), os.path.join(base_dir, BOOK_PATH[1:], book_classify.name))
     return ''
 
 
@@ -592,7 +598,7 @@ def save_update_book():
         now_time = datetime.now().strftime("%Y%m%d%H%M%S")
         random_filename = now_time + image.filename
         save_path = os.path.join(BOOK_PATH, classify.name, random_filename)
-        file_path = os.path.join(base_dir, BOOK_PATH, classify.name, random_filename)
+        file_path = os.path.join(base_dir, BOOK_PATH[1:], classify.name, random_filename)
         image.save(file_path)
     else:
         save_path = ICON_PATH
@@ -617,7 +623,7 @@ def save_update_book():
         db.session.add(book)
     db.session.commit()
     if old_image_url and old_image_url != ICON_PATH:
-            os.remove(os.path.join(base_dir, old_image_url))
+            os.remove(os.path.join(base_dir, old_image_url[1:]))
     return redirect(request.referrer)
 
 
@@ -628,7 +634,7 @@ def del_book(book_id):
     path = book.image_url
     db.session.delete(book)
     db.session.commit()
-    os.remove(path)
+    os.remove(os.path.join(base_dir, path[1:]))
     return ''
 
 
@@ -762,8 +768,55 @@ def comment_reply():
 
 # 管理滚动图片
 @app.route('/admin/carousel')
+@check_admin
 def admin_carousel():
-    return render_template('admin_carousel.html')
+    carousels = Carousel.query.order_by(Carousel.sort).all()
+    return render_template('admin_carousel.html', carousels=carousels)
+
+
+# 上传滚动图片
+@app.route('/admin/add_carousel', methods=['POST'])
+@check_admin
+def admin_add_carousel():
+    image = request.files.get('image')
+    now_time = datetime.now().strftime("%Y%m%d%H%M%S")
+    random_filename = now_time + image.filename
+    save_path = os.path.join(CAROUSEL_PATH, random_filename)
+    file_path = os.path.join(base_dir, CAROUSEL_PATH[1:], random_filename)
+    sort_num = len(Carousel.query.all()) + 1
+    carousel = Carousel(url=save_path, sort=sort_num)
+    db.session.add(carousel)
+    db.session.commit()
+    image.save(file_path)
+    return redirect(url_for('admin_carousel'))
+
+
+# 保存滚动图片顺序
+@app.route('/admin/save_carousel_sort', methods=['POST'])
+@check_admin
+def admin_save_carousel_sort():
+    carousels = Carousel.query.all()
+    crs = request.json.get('crs')
+    for k, value in crs.items():
+        for carousel in carousels:
+            if carousel.id == int(k):
+                carousel.sort = value
+                break
+    db.session.commit()
+    return ''
+
+
+# 删除滚动图片
+@app.route('/admin/del_carousel', methods=['POST'])
+@check_admin
+def admin_del_carousel():
+    crs_id = request.args.get('id')
+    carousel = Carousel.query.filter(Carousel.id == crs_id).one()
+    path = carousel.url
+    db.session.delete(carousel)
+    db.session.commit()
+    os.remove(os.path.join(base_dir, path[1:]))
+    return redirect(url_for('admin_carousel'))
 
 
 # 用户评论
