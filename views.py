@@ -4,7 +4,8 @@ from sqlalchemy import or_, func, and_
 from functools import wraps
 import os
 import shutil
-from datetime import timedelta
+from datetime import timedelta, datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from forms import *
 from models import *
@@ -14,11 +15,49 @@ PAGE_SIZE = 12
 BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
 Single = 60
+TEST_AUTO_CANCEL_TIME = timedelta(minutes=3)
+TEST_AUTO_CONFIRM_TIME = timedelta(minutes=3)
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 BOOK_PATH = "/static/image/books/"
 ICON_PATH = "/static/image/icon.png"
 CAROUSEL_PATH = '/static/image/carousel/'
+
+
+# 任务调度方法 检查是否超时，超时订单修改状态
+def check_overtime(order_id):
+    order = OrderTable.query.filter(order_id == OrderTable.id).one()
+    if order.state == '待付款':
+        order.state = '已取消'
+        db.session.commit()
+    elif order.state == '待收货':
+        order.state = '已完成'
+        for item in order.order_items:
+            item.book.sales_volume += item.quantity
+        db.session.commit()
+
+
+# 启动服务器后检查数据库超时订单方法 超时自动修改状态 未超时加入任务调度
+def check_first():
+    tmp_orders = OrderTable.query.filter(or_(OrderTable.state == '待付款', OrderTable.state == '待收货')).all()
+    for tmp_order in tmp_orders:
+        if tmp_order.state == '待付款':
+            run_time = tmp_order.create_time + TEST_AUTO_CANCEL_TIME
+            if run_time <= datetime.now():
+                run_time = datetime.now() + TEST_AUTO_CANCEL_TIME
+            scheduler.add_job(func=check_overtime, args=[tmp_order.id], next_run_time=run_time)
+        else:
+            run_time = tmp_order.create_time + TEST_AUTO_CONFIRM_TIME
+            if run_time <= datetime.now():
+                run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
+            scheduler.add_job(func=check_overtime, args=[tmp_order.id], next_run_time=run_time)
+
+
+# 任务调度
+scheduler = BackgroundScheduler()
+scheduler.start()
+check_first()
+
 
 # 自定义检查登录错误类
 class CheckLoginError(Exception):
@@ -56,7 +95,7 @@ def index():
     page = get_page()
     paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id)\
         .paginate(page, CLASSIFY_PAGE_SIZE, False)
-    carousels = Carousel.query.all()
+    carousels = Carousel.query.order_by(Carousel.sort).all()
     return render_template('index.html', paginate=paginate, carousels=carousels)
 
 
@@ -169,6 +208,7 @@ def register():
 
 @app.route('/admin/logout/')
 @app.route('/logout/')
+@check_login
 def logout():
     # session.pop('user_id')
     # session['user_id']
@@ -179,6 +219,7 @@ def logout():
 # 个人中心
 @app.route('/admin/personal_information/', methods=['GET', 'POST'])
 @app.route('/personal_information/', methods=['GET', 'POST'])
+@check_login
 def personal_information():
     form = PersonalForm()
     pwd_form = UpdatePasswordForm()
@@ -205,6 +246,7 @@ def personal_information():
 # 添加修改地址
 @app.route('/admin/save_up_address', methods=['POST'])
 @app.route('/save_up_address', methods=['POST'])
+@check_login
 def save_up_address():
     re_id = request.form.get('id')
     name = request.form.get('name')
@@ -224,6 +266,7 @@ def save_up_address():
 
 
 # 修改密码
+@check_login
 def update_password(form):
     user = User.query.get(session.get(USER_ID))
     old_password = form.oldPassword.data
@@ -256,6 +299,7 @@ def like_change(book_id):
 
 # 添加到购物车
 @app.route('/add_to_cart')
+@check_login
 def add_to_cart():
     book_id = request.args.get('book_id')
     scroll_pos = request.args.get('scrollPos')
@@ -304,6 +348,7 @@ def deal_url(url, scroll_pos):
 
 # 删除购物车中的项
 @app.route('/delete_cart_item')
+@check_login
 def delete_cart_item():
     item_id = request.args.get('item_id')
     item = CartItem.query.filter(CartItem.id == item_id).one()
@@ -314,12 +359,14 @@ def delete_cart_item():
 
 # 查看购物车
 @app.route('/query_cart')
+@check_login
 def query_cart():
     return render_template('cart.html')
 
 
 # 保存购物车信息
 @app.route('/save_cart', methods=['POST'])
+@check_login
 def save_cart():
     items = request.json
     cart_items = get_user().cart.cart_items
@@ -335,6 +382,7 @@ def save_cart():
 
 # 创建订单
 @app.route("/create_order", methods=['POST'])
+@check_login
 def create_order():
     item_id_list = request.json.get('item_list')
     # 地址
@@ -352,6 +400,7 @@ def create_order():
             order.payment_amount += cart_item.price
             db.session.delete(cart_item)
         db.session.commit()
+        scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=order.create_time + TEST_AUTO_CANCEL_TIME)
     except Exception as e:
         db.session.rollback()
         if order:
@@ -362,6 +411,7 @@ def create_order():
 
 # 支付
 @app.route('/pay', methods=['POST'])
+@check_login
 def pay():
     order_id = request.form.get('order_id')
     order = OrderTable.query.filter(and_(order_id == OrderTable.id, OrderTable.user_id == get_user().id)).one()
@@ -370,20 +420,22 @@ def pay():
         db.session.commit()
     else:
         flash('error')
-    return redirect(url_for('index'))
+    return redirect(url_for('orders_view'))
 
 
 # 查看订单页面
 @app.route('/orders')
+@check_login
 def orders_view():
     page = get_page()
     user = get_user()
-    paginate = OrderTable.query.filter(OrderTable.user_id == user.id).paginate(page, BOOK_PAGE_SIZE, False)
+    paginate = OrderTable.query.filter(OrderTable.user_id == user.id).order_by(OrderTable.create_time.desc()).paginate(page, BOOK_PAGE_SIZE, False)
     return render_template('orders.html', paginate=paginate)
 
 
 # 订单详情页面
 @app.route('/order_detail')
+@check_login
 def order_detail():
     order_id = request.args.get('order_id')
     order = OrderTable.query.filter(and_(OrderTable.id == order_id, OrderTable.user_id == get_user().id)).one_or_none()
@@ -392,6 +444,7 @@ def order_detail():
 
 # 取消订单
 @app.route('/order_cancel_<order_id>')
+@check_login
 def order_cancel(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '待付款' or order.state == '待发货':
@@ -404,6 +457,7 @@ def order_cancel(order_id):
 
 # 确认收货
 @app.route('/order_complete_<order_id>')
+@check_login
 def order_complete(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '待收货':
@@ -418,6 +472,7 @@ def order_complete(order_id):
 
 # 申请退货
 @app.route('/order_apply_return_<order_id>')
+@check_login
 def order_apply_return(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
     if order.state == '已完成':
@@ -469,6 +524,11 @@ def order_update(order_id):
             for item in order.order_items:
                 item.book.sales_volume -= item.quantity
         db.session.commit()
+        if order.state == '待收货':
+            run_time = order.create_time + TEST_AUTO_CONFIRM_TIME
+            if run_time >= datetime.now():
+                run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
+            scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=run_time)
     else:
         abort(404)
     return redirect(url_for('admin_order_detail', order_id=order_id))

@@ -39,6 +39,11 @@ $(function () {
     $('input.input_quantity').on('input propertychange',function () {
         let price = $(this).data('price');
         let quantity = $(this).val();
+        let max_q = $(this).data('max');
+        if(quantity > max_q)
+            quantity = max_q;
+        else if(quantity <= 0)
+            quantity = 1;
         $(this).parents('td:first').next().find('input:first').val(parseFloat(price*quantity).toFixed(1));
     });
 
@@ -56,16 +61,18 @@ $(function () {
                 item_list.push(input.eq(i).parents('tr:first').data('item_id'));
         }
         let recipient_id = $('#sel_address').val();
-        $.ajax({
-            type:'POST',
-            url:'/create_order',
-            contentType:'application/json',
-            dataType:'html',
-            data:JSON.stringify({item_list:item_list,recipient_id:recipient_id}),
-            success:function (data) {
-                $('div.modal-pay:first').html(data);
-            }
-        })
+        setTimeout(function () {
+            $.ajax({
+                type: 'POST',
+                url: '/create_order',
+                contentType: 'application/json',
+                dataType: 'html',
+                data: JSON.stringify({item_list: item_list, recipient_id: recipient_id}),
+                success: function (data) {
+                    $('div.modal-pay:first').html(data);
+                }
+            })
+        },500)
     });
 
     //支付 关闭 跳转到订单

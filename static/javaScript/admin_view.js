@@ -29,7 +29,7 @@ $(function () {
     });
 
     //点击添加到购物车
-    $('div.main').off('click', '.a_add_to_cart').on('click', '.a_add_to_cart', function () {
+    $('body').off('click', '.a_add_to_cart').on('click', '.a_add_to_cart', function () {
         let origin_href = $(this).prop('href');
         let scrollPos;
         if (typeof window.pageYOffset != 'undefined') {

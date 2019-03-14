@@ -88,7 +88,7 @@
 {# 滚动荧幕 #}
 {% block carousel %}
     {% if carousels %}
-    <div class="container">
+    <div class="container" style="background: url('{{ url_for('static',filename='image/carousel-background.jpg') }}') no-repeat ;background-size:cover;">
         <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
             <!-- Indicators -->
             <ol class="carousel-indicators">

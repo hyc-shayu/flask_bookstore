@@ -30,7 +30,7 @@
             </dl>
             {% if user and not user.admin %}
                 <a href="{{ url_for('add_to_cart') }}?book_id={{ book.id }}"
-                   class="btn btn-primary" style="margin-right: 5px;" role="button">加入购物车</a>
+                   class="btn btn-primary a_add_to_cart" style="margin-right: 5px;" role="button">加入购物车</a>
                 {% if book in user.favorite_books %}
                     <a href="javaScript:;"
                        data-url="{{ url_for('like_change', book_id=book.id) }}"
