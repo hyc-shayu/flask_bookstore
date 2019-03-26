@@ -50,7 +50,7 @@
         </tbody>
     </table>
     {% if order.state == '待付款' %}
-        <button class="btn btn-success pull-right" id="btn_to_pay" data-toggle="modal" data-target="#modal-pay"
+        <button class="btn btn-success pull-right" id="btn_to_pay" data-id="{{ order.id }}" data-toggle="modal" data-target="#modal-pay"
         >去付款
         </button>
         <a href="{{ url_for('order_cancel', order_id = order.id) }}" class="btn btn-danger pull-right">取消订单</a>

@@ -6,6 +6,8 @@ import os
 import shutil
 from datetime import timedelta, datetime
 from apscheduler.schedulers.background import BackgroundScheduler
+from urllib.request import urlopen
+import json
 
 from forms import *
 from models import *
@@ -15,8 +17,8 @@ PAGE_SIZE = 12
 BOOK_PAGE_SIZE = 20
 CLASSIFY_PAGE_SIZE = 5
 Single = 60
-TEST_AUTO_CANCEL_TIME = timedelta(minutes=3)
-TEST_AUTO_CONFIRM_TIME = timedelta(minutes=3)
+TEST_AUTO_CANCEL_TIME = timedelta(minutes=10)
+TEST_AUTO_CONFIRM_TIME = timedelta(minutes=10)
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 BOOK_PATH = "/static/image/books/"
@@ -82,7 +84,7 @@ def check_admin(fun):
         if not user:
             raise CheckLoginError
         if not user.admin:
-            raise  CheckLoginError
+            raise CheckLoginError
         return fun(*args, **kwargs)
     return wrapper
 
@@ -118,7 +120,7 @@ def rank_book(rank_type):
 # 图书分类页面
 @app.route('/book_classify_<int:book_classify_id>_<sort_type>')
 @app.route('/book_classify_<int:book_classify_id>')
-def books_view_classify(book_classify_id,sort_type='sale'):
+def books_view_classify(book_classify_id, sort_type='sale'):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
@@ -135,7 +137,7 @@ def books_view_classify(book_classify_id,sort_type='sale'):
 # 用户搜索图书
 @app.route('/books_query_<query_str>-<sort_type>')
 @app.route('/books_query')
-def books_query(query_str=None,sort_type='sale'):
+def books_query(query_str=None, sort_type='sale'):
     scroll_pos = request.args.get('scroll_pos')
     if scroll_pos:
         g.scroll_pos = scroll_pos
@@ -406,7 +408,14 @@ def create_order():
         if order:
             db.session.delete(order)
             db.session.commit()
-    return render_template('pay.html',order=order)
+    return render_template('pay.html', order=order)
+
+
+@app.route('/to_pay', methods=['POST'])
+def to_pay():
+    order_id = request.json.get('order_id')
+    order = OrderTable.query.filter(get_user().id == OrderTable.user_id, order_id == OrderTable.id).one()
+    return render_template('pay.html', order=order)
 
 
 # 支付
@@ -416,11 +425,10 @@ def pay():
     order_id = request.form.get('order_id')
     order = OrderTable.query.filter(and_(order_id == OrderTable.id, OrderTable.user_id == get_user().id)).one()
     if order.state == '待付款':
-        order.state = '待发货'
-        db.session.commit()
+        return pay_api(order)
     else:
         flash('error')
-    return redirect(url_for('orders_view'))
+        return redirect(url_for('orders_view'))
 
 
 # 查看订单页面
@@ -964,3 +972,103 @@ def error_404(error):
 @app.errorhandler(500)
 def error_500(error):
     return '服务器去吃饭了，请稍后再试'
+
+
+from alipay import alipay, RESULT_URL, REFUND_NOTIFY
+
+
+# 支付接口
+def pay_api(order):
+    # 传递参数执行支付类里的direct_pay方法，返回签名后的支付参数，
+    url = alipay.direct_pay(
+        subject=user.username + str(order.id),  # 订单名称
+        # 订单号生成，一般是当前时间(精确到秒)+用户ID+随机数
+        out_trade_no=order.id,  # 订单号
+        total_amount=order.payment_amount,  # 支付金额
+        return_url=RESULT_URL  # 支付成功后，跳转url 【客户端显示】
+    )
+    # 将前面后的支付参数，拼接到支付网关
+    # 注意：下面支付网关是沙箱环境，最终进行签名后组合成支付宝的url请求
+    re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+
+    # 返回的是支付宝的支付地址
+    # return {'re_url': re_url}
+    return redirect(re_url)
+
+
+# 退款接口
+def refund(order):
+    url = alipay.api_alipay_trade_refund(
+        refund_amount=order.payment_amount,
+        out_trade_no=order.id
+    )
+    jsont = json.loads(urlopen(url).read().decode('utf8'))
+    jsont = jsont.get('alipay_trade_refund_response')
+    statu = jsont.get('fund_change')
+    if statu == 'Y':
+        order.state = '已取消'
+        db.session.commit()
+        flash('退款成功')
+    else:
+        flash('退款失败，请重试')
+    user = get_user()
+    if user and user.admin:
+        return admin_order_detail(order.id)
+    return redirect(url_for('order_detail', order_id=order.id))
+
+
+# 测试支付接口
+@app.route('/pay_test/', methods=['POST', 'GET'])
+def pay_test():
+    # 传递参数执行支付类里的direct_pay方法，返回签名后的支付参数，
+    url = alipay.direct_pay(
+        subject="test_order",  # 订单名称
+        # 订单号生成，一般是当前时间(精确到秒)+用户ID+随机数
+        out_trade_no=datetime.now().strftime('%Y%m%d%H%M%S') + '123',  # 订单号
+        total_amount=10,  # 支付金额
+        return_url=RESULT_URL  # 支付成功后，跳转url 【客户端显示】
+    )
+    # 将前面后的支付参数，拼接到支付网关
+    # 注意：下面支付网关是沙箱环境，最终进行签名后组合成支付宝的url请求
+    re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+
+    # 返回的是支付宝的支付地址
+    # return {'re_url': re_url}
+    return redirect(re_url)
+
+
+# 测试退款接口
+@app.route('/refund/')
+def refund():
+    url = alipay.api_alipay_trade_refund(
+        refund_amount=111,
+        out_trade_no='20190323122126'
+    )
+    jsont = json.loads(urlopen(url).read().decode('utf8'))
+    jsont = jsont.get('alipay_trade_refund_response')
+    statu = jsont.get('fund_change')
+    return '退款成功'
+
+
+# 支付完成跳转
+@app.route('/result/')
+def result():
+    order_id = request.args.get('out_trade_no')
+    # 订单支付完成，跳转到对应的页面
+    return redirect(url_for('order_detail', order_id=order_id))
+
+
+# 支付异步通知
+@app.route('/notify/', methods=['POST'])
+def notify():
+    # 获取 支付成功的 订单号
+    order_id = request.form.get('out_trade_no')
+    order = OrderTable.query.filter(order_id == OrderTable.id).one()
+    # 修改订单状态以及其他操作
+    if order.state == '待付款':
+        order.state = '待发货'
+        db.session.commit()
+    else:
+        abort(404)
+    # 返回支付宝success，否则会不间断的调用该回调
+    return jsonify({'msg': 'success'})
