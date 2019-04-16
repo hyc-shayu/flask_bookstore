@@ -108,7 +108,7 @@ $(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: 'opt_book_modal',
+                url: url,
                 data: {book_id: book_id},
                 dataType: 'html',
                 success: function (data) {

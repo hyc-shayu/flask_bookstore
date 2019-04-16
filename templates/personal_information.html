@@ -78,18 +78,22 @@
                 {% if not user.admin %}
                     <div style="margin-bottom: 50px">
                         <h4 id="section-4" class="title">我的收藏</h4>
-                        <div class="row show_modal">
-                            {% for book in user.favorite_books %}
-                                <div class="col-sm-6 col-md-3">
-                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
-                                       data-url="{{ url_for('book_detail_customer',book_id=book.id) }}"
-                                       class="thumbnail">
-                                        <img src="{{ book.image_url }}" alt=""
-                                             style="height: 200px; ">
-                                    </a>
-                                </div>
-                            {% endfor %}
+                        {% for book in user.favorite_books %}
+                            {% if loop.index0 % 4 == 0 %}
+                                <div class="row show_modal">
+                            {% endif %}
+                        <div class="col-sm-6 col-md-3">
+                            <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
+                               data-url="{{ url_for('book_detail_customer',book_id=book.id) }}"
+                               class="thumbnail">
+                                <img src="{{ book.image_url }}" alt=""
+                                     style="height: 200px; ">
+                            </a>
                         </div>
+                        {% if loop.index0 % 4 == 3 or loop.last %}
+                            </div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
                     <div style="margin-bottom: 50px">
                         <h4 id="section-2" class="title">收货地址</h4>

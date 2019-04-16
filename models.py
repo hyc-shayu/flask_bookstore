@@ -53,9 +53,10 @@ class OrderTable(db.Model):
 
     payment_amount = db.Column(db.Float, nullable=False, default=0)
     # 是否还缺少状态 拒绝退货 同意退货
-    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已完成', '申请退货', '同意退货', '拒绝退货', '已退货'), default='待付款')
+    state = db.Column(db.Enum('待付款', '已取消', '待发货', '待收货', '已收货', '已完成', '申请退货', '同意退货', '拒绝退货', '已退货'), default='待付款')
     # 考虑创建索引
     create_time = db.Column(db.DateTime, default=datetime.now)
+    modify_time = db.Column(db.DateTime, default=create_time)
 
     order_items = db.relationship('OrderItem')
 

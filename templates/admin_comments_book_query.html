@@ -1,6 +1,11 @@
 {% extends 'admin_comments_book.html' %}
 {% block page %}
     {% if paginate.pages > 1 %}
-        {{ macros.pagination_data_url_page(paginate,url) }}
+        {{ macros.pagination_widget_href_get(paginate,url) }}
     {% endif %}
+    <script type="text/javascript">
+        $(function () {
+            $('div.ajax-list-manage-book').removeClass('ajax-list-manage-book');
+        })
+    </script>
 {% endblock %}

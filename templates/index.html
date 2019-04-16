@@ -9,7 +9,7 @@
     {% for classify in paginate.items %}
         {% if classify.books|length > 0 %}
             <div class="row">
-                {% for book in classify.books[0:8] %}
+                {% for book in classify.books[0:4] %}
                     {% if loop.first %}
                         <h2 style="margin-left: 20px">{{ classify.name }}</h2>
                     {% endif %}

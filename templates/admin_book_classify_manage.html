@@ -36,14 +36,16 @@
     >添加图书分类
     </a>
     <a class="btn pull-right opt_book_a" style="margin-top: 20px;" data-toggle="modal"
-       data-target="#modal-book_add_or_update" data-url="{{ url_for('save_update_book') }}"
+       data-target="#modal-book_add_or_update" data-url="{{ url_for('opt_book_modal') }}"
     >添加图书
     </a>
-    {% block page %}
-        {% if paginate.pages > 1 %}
-            {{ macros.pagination_widget(paginate,'book_classify_manage') }}
-        {% endif %}
-    {% endblock %}
+    <div class="ajax-list-manage-book">
+        {% block page %}
+            {% if paginate.pages > 1 %}
+                {{ macros.pagination_widget(paginate,'book_classify_manage') }}
+            {% endif %}
+        {% endblock %}
+    </div>
 </div>
 
 {# 删除图书分类 #}
@@ -87,6 +89,11 @@
 </div>
 {# 添加修改图书模态框 #}
 <div class="modal fade" id="modal-book_add_or_update" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel">
+</div>
+
+{# 图书详情 模态框 #}
+<div class="modal fade modal-book-detail" tabindex="-1" role="dialog" id="modal-comment-book"
      aria-labelledby="exampleModalLabel">
 </div>
 

@@ -1,69 +1,57 @@
-from app import app
+from app import app, scheduler
 from flask import request, render_template, redirect, url_for, session, flash, jsonify, g, abort
 from sqlalchemy import or_, func, and_
 from functools import wraps
 import os
 import shutil
 from datetime import timedelta, datetime
-from apscheduler.schedulers.background import BackgroundScheduler
 from urllib.request import urlopen
 import json
-
-from forms import *
-from models import *
-
-USER_ID = 'user_id'
-PAGE_SIZE = 12
-BOOK_PAGE_SIZE = 20
-CLASSIFY_PAGE_SIZE = 5
-Single = 60
-TEST_AUTO_CANCEL_TIME = timedelta(minutes=10)
-TEST_AUTO_CONFIRM_TIME = timedelta(minutes=10)
-
-base_dir = os.path.abspath(os.path.dirname(__file__))
-BOOK_PATH = "/static/image/books/"
-ICON_PATH = "/static/image/icon.png"
-CAROUSEL_PATH = '/static/image/carousel/'
+from forms import LoginForm, PersonalForm, UpdatePasswordForm
+from setting import *
+from utils import *
+from errors import *
 
 
 # 任务调度方法 检查是否超时，超时订单修改状态
 def check_overtime(order_id):
     order = OrderTable.query.filter(order_id == OrderTable.id).one()
-    if order.state == '待付款':
-        order.state = '已取消'
-        db.session.commit()
-    elif order.state == '待收货':
-        order.state = '已完成'
+    if order.state == OrderState.WaitPay.value:
+        order.state = OrderState.Cancel.value
+    elif order.state == OrderState.WaitReceive.value:
+        order.state = OrderState.Received.value
         for item in order.order_items:
             item.book.sales_volume += item.quantity
-        db.session.commit()
+    elif order.state == OrderState.Received.value:
+        order.state = OrderState.Completed.value
+    else:
+        return
+    order.modify_time = datetime.now()
+    db.session.commit()
 
 
-# 启动服务器后检查数据库超时订单方法 超时自动修改状态 未超时加入任务调度
+# 启动服务器后检查数据库超时订单方法 全部重置超时时间 加入任务调度
 def check_first():
-    tmp_orders = OrderTable.query.filter(or_(OrderTable.state == '待付款', OrderTable.state == '待收货')).all()
+    tmp_orders = OrderTable.query.filter(or_(OrderTable.state == OrderState.WaitPay.value,
+                                             OrderTable.state == OrderState.WaitReceive.value,
+                                             OrderTable.state == OrderState.Received.value)).all()
     for tmp_order in tmp_orders:
-        if tmp_order.state == '待付款':
-            run_time = tmp_order.create_time + TEST_AUTO_CANCEL_TIME
-            if run_time <= datetime.now():
-                run_time = datetime.now() + TEST_AUTO_CANCEL_TIME
+        if tmp_order.state == OrderState.WaitPay.value:
+            # 重新计时
+            run_time = datetime.now() + TEST_AUTO_CANCEL_TIME
+            scheduler.add_job(func=check_overtime, args=[tmp_order.id], next_run_time=run_time)
+        elif tmp_order.state == OrderState.WaitReceive.value:
+            run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
             scheduler.add_job(func=check_overtime, args=[tmp_order.id], next_run_time=run_time)
         else:
-            run_time = tmp_order.create_time + TEST_AUTO_CONFIRM_TIME
-            if run_time <= datetime.now():
-                run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
+            run_time = datetime.now() + TEST_AUTO_FINISH_TIME
             scheduler.add_job(func=check_overtime, args=[tmp_order.id], next_run_time=run_time)
 
 
 # 任务调度
-scheduler = BackgroundScheduler()
-scheduler.start()
-check_first()
-
-
-# 自定义检查登录错误类
-class CheckLoginError(Exception):
-    pass
+def start_scheduler():
+    scheduler.start()
+    check_first()
 
 
 # 装饰器 检查用户登录状态
@@ -95,7 +83,7 @@ def index():
     if scroll_pos:
         g.scroll_pos = scroll_pos
     page = get_page()
-    paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id)\
+    paginate = BookClassify.query.join(Book, Book.book_classify_id == BookClassify.id).group_by(BookClassify.id).order_by(BookClassify.id)\
         .paginate(page, CLASSIFY_PAGE_SIZE, False)
     carousels = Carousel.query.order_by(Carousel.sort).all()
     return render_template('index.html', paginate=paginate, carousels=carousels)
@@ -150,18 +138,6 @@ def books_query(query_str=None, sort_type='sale'):
     query = book_sort_query(query, sort_type)
     paginate = query.paginate(page, BOOK_PAGE_SIZE, False)
     return render_template('book.html', paginate=paginate, query_str=query_str, url=url_for('books_query', query_str=query_str, sort_type=sort_type))
-
-
-# 从url获取页数
-def get_page():
-    page = request.args.get('page')
-    if not page:
-        page = 1
-    try:
-        page = int(page)
-    except ValueError or TypeError:
-        page = 1
-    return page
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -330,24 +306,6 @@ def add_to_cart():
     return redirect(url)
 
 
-# 处理url 为url添加滚动条位置参数
-def deal_url(url, scroll_pos):
-    if '?' in url:
-        if 'scroll_pos' in url:
-            str1 = url.split('scroll_pos', 1)
-            str_tmp = str1[1].split('&', 1)
-            if len(str_tmp) > 1:
-                str_tmp = '&' + str_tmp[1]
-            else:
-                str_tmp = ''
-            url = str1[0] + 'scroll_pos=' + scroll_pos + str_tmp
-        else:
-            url += '&scroll_pos=' + scroll_pos
-    else:
-        url += '?scroll_pos=' + scroll_pos
-    return url
-
-
 # 删除购物车中的项
 @app.route('/delete_cart_item')
 @check_login
@@ -391,6 +349,7 @@ def create_order():
     recipient_id = request.json.get('recipient_id')
     recipient = Recipient.query.filter(Recipient.id == recipient_id).one()
     user = get_user()
+    order = None
     try:
         order = OrderTable(user_id=user.id, recipient_id=recipient_id, name=recipient.name, phone=recipient.phone, address=recipient.address)
         db.session.add(order)
@@ -402,7 +361,7 @@ def create_order():
             order.payment_amount += cart_item.price
             db.session.delete(cart_item)
         db.session.commit()
-        scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=order.create_time + TEST_AUTO_CANCEL_TIME)
+        scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=order.modify_time + TEST_AUTO_CANCEL_TIME)
     except Exception as e:
         db.session.rollback()
         if order:
@@ -411,6 +370,7 @@ def create_order():
     return render_template('pay.html', order=order)
 
 
+# 跳转到支付页面
 @app.route('/to_pay', methods=['POST'])
 def to_pay():
     order_id = request.json.get('order_id')
@@ -424,7 +384,7 @@ def to_pay():
 def pay():
     order_id = request.form.get('order_id')
     order = OrderTable.query.filter(and_(order_id == OrderTable.id, OrderTable.user_id == get_user().id)).one()
-    if order.state == '待付款':
+    if order.state == OrderState.WaitPay.value:
         return pay_api(order)
     else:
         flash('error')
@@ -437,7 +397,7 @@ def pay():
 def orders_view():
     page = get_page()
     user = get_user()
-    paginate = OrderTable.query.filter(OrderTable.user_id == user.id).order_by(OrderTable.create_time.desc()).paginate(page, BOOK_PAGE_SIZE, False)
+    paginate = OrderTable.query.filter(OrderTable.user_id == user.id).order_by(OrderTable.modify_time.desc()).paginate(page, BOOK_PAGE_SIZE, False)
     return render_template('orders.html', paginate=paginate)
 
 
@@ -455,8 +415,10 @@ def order_detail():
 @check_login
 def order_cancel(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
-    if order.state == '待付款' or order.state == '待发货':
-        order.state = '已取消'
+    if order.state == OrderState.WaitPay.value or order.state == OrderState.WaitDelivery.value:
+        refund(order)
+        order.state = OrderState.Cancel.value
+        order.modify_time = datetime.now()
         db.session.commit()
     else:
         abort(404)
@@ -468,8 +430,10 @@ def order_cancel(order_id):
 @check_login
 def order_complete(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
-    if order.state == '待收货':
-        order.state = '已完成'
+    if order.state == OrderState.WaitReceive.value:
+        order.state = OrderState.Received.value
+        order.modify_time = datetime.now()
+        scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=order.modify_time + TEST_AUTO_FINISH_TIME)
         for item in order.order_items:
             item.book.sales_volume += item.quantity
         db.session.commit()
@@ -483,8 +447,9 @@ def order_complete(order_id):
 @check_login
 def order_apply_return(order_id):
     order = OrderTable.query.filter(and_(OrderTable.user_id == get_user().id, OrderTable.id == order_id)).one_or_none()
-    if order.state == '已完成':
-        order.state = '申请退货'
+    if order.state == OrderState.Received.value:
+        order.state = OrderState.ApplyReturn.value
+        order.modify_time = datetime.now()
         db.session.commit()
     else:
         abort(404)
@@ -496,10 +461,10 @@ def order_apply_return(order_id):
 @app.route('/admin/', methods=['GET', 'POST'])
 def admin_view():
     if request.method == 'GET':
-        orders_paid = OrderTable.query.filter(OrderTable.state == '待发货').all()
+        orders_paid = OrderTable.query.filter(OrderTable.state == OrderState.WaitDelivery.value).all()
         orders_paid_count = len(orders_paid)
         orders_paid = orders_paid[0:PAGE_SIZE]
-        orders_apply_return = OrderTable.query.filter(OrderTable.state == '申请退货').all()
+        orders_apply_return = OrderTable.query.filter(OrderTable.state == OrderState.ApplyReturn.value).all()
         orders_apply_return_count = len(orders_apply_return)
         orders_apply_return = orders_apply_return[0:PAGE_SIZE]
         comments_new = Comment.query.filter(Comment.admin_check == False).order_by(Comment.publish_time.desc()).all()
@@ -528,14 +493,16 @@ def order_update(order_id):
     order = OrderTable.query.filter(OrderTable.id == order_id).one()
     if order:
         order.state = request.form.get('state')
-        if order.state == '已退货':
+        order.modify_time = datetime.now()
+        if order.state == OrderState.Returned.value:
             for item in order.order_items:
                 item.book.sales_volume -= item.quantity
+            refund(order)
         db.session.commit()
-        if order.state == '待收货':
-            run_time = order.create_time + TEST_AUTO_CONFIRM_TIME
-            if run_time >= datetime.now():
-                run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
+        if order.state == OrderState.WaitReceive.value:
+            run_time = order.modify_time + TEST_AUTO_CONFIRM_TIME
+            # if run_time >= datetime.now():
+            #     run_time = datetime.now() + TEST_AUTO_CONFIRM_TIME
             scheduler.add_job(func=check_overtime, args=[order.id], next_run_time=run_time)
     else:
         abort(404)
@@ -548,7 +515,7 @@ def order_update(order_id):
 @check_admin
 def admin_order_manage():
     page = get_page()
-    paginate = OrderTable.query.order_by(OrderTable.create_time.desc()).paginate(page, PAGE_SIZE)
+    paginate = OrderTable.query.order_by(OrderTable.modify_time.desc()).paginate(page, PAGE_SIZE)
     return render_template('admin_order_manage.html', paginate=paginate)
 
 
@@ -579,7 +546,7 @@ def admin_order_recipient_modify(order_id):
 @app.route('/admin/book_classify_manage_<int:page>')
 @app.route('/admin/book_classify_manage')
 def book_classify_manage(page=1):
-    paginate = BookClassify.query.paginate(page, PAGE_SIZE, False)
+    paginate = BookClassify.query.order_by(BookClassify.id).paginate(page, PAGE_SIZE, False)
     return render_template('admin_book_classify_manage.html', paginate=paginate)
 
 
@@ -588,10 +555,10 @@ def book_classify_manage(page=1):
 def book_classify_add():
     name = request.form.get('name')
     book_classify = BookClassify(name=name)
-    db.session.add(book_classify)
-    db.session.commit()
     classify_path = os.path.join(base_dir, BOOK_PATH[1:], book_classify.name)
     os.mkdir(classify_path)
+    db.session.add(book_classify)
+    db.session.commit()
     return ''
 
 
@@ -628,7 +595,7 @@ def get_books_list(book_classify_id, page=1):
 # 查看 添加&修改图书页面
 @app.route('/admin/opt_book_modal', methods=['POST'])
 def opt_book_modal():
-    book_classifies = BookClassify.query.all()
+    book_classifies = BookClassify.query.order_by(BookClassify.id).all()
     book_id = request.form.get('book_id')
     book = Book.query.filter(Book.id == book_id).one_or_none() if book_id else None
     return render_template('opt_book_modal.html', book=book, book_classifies=book_classifies)
@@ -690,7 +657,7 @@ def save_update_book():
                     publish_time=publish_time, press=press, introduction=introduction, image_url=save_path)
         db.session.add(book)
     db.session.commit()
-    if old_image_url and old_image_url != ICON_PATH:
+    if image and old_image_url and old_image_url != ICON_PATH:
             os.remove(os.path.join(base_dir, old_image_url[1:]))
     return redirect(request.referrer)
 
@@ -726,32 +693,33 @@ def admin_comments_manage_by_book(sort_type='sale'):
 
 
 # 排序查询方法
-def book_sort_query(query, sort_type):
-    if 'sale' in sort_type:
-        if sort_type == 'sale':
-            query = query.order_by(Book.sales_volume.desc())
-        else:
-            query = query.order_by(Book.sales_volume)
-    elif 'time' in sort_type:
-        if sort_type == 'time':
-            query = query.order_by(Book.publish_time.desc())
-        else:
-            query = query.order_by(Book.publish_time)
-    elif 'like' in sort_type:
-        if sort_type == 'like':
-            query = query.order_by(Book.favorite_user_count.desc())
-        else:
-            query = query.order_by(Book.favorite_user_count)
-    elif 'price' in sort_type:
-        if sort_type == 'price':
-            query = query.order_by(Book.price.desc())
-        else:
-            query = query.order_by(Book.price)
-    else:
-        abort(404)
-    return query
+# def book_sort_query(query, sort_type):
+#     if 'sale' in sort_type:
+#         if sort_type == 'sale':
+#             query = query.order_by(Book.sales_volume.desc())
+#         else:
+#             query = query.order_by(Book.sales_volume)
+#     elif 'time' in sort_type:
+#         if sort_type == 'time':
+#             query = query.order_by(Book.publish_time.desc())
+#         else:
+#             query = query.order_by(Book.publish_time)
+#     elif 'like' in sort_type:
+#         if sort_type == 'like':
+#             query = query.order_by(Book.favorite_user_count.desc())
+#         else:
+#             query = query.order_by(Book.favorite_user_count)
+#     elif 'price' in sort_type:
+#         if sort_type == 'price':
+#             query = query.order_by(Book.price.desc())
+#         else:
+#             query = query.order_by(Book.price)
+#     else:
+#         abort(404)
+#     return query
 
 
+# 待优化
 # 管理员 搜索  图书|图书分类|订单
 @app.route('/admin/query_<query_type>_<query_str>')
 @app.route('/admin/query')
@@ -769,7 +737,7 @@ def admin_query(query_type='', query_str=''):
     if query_type == 'order':
         paginate = OrderTable.query.join(User, OrderTable.user_id == User.id)\
             .filter(or_(User.username.like('%' + query_str + '%'), OrderTable.id == str_to_int))\
-            .order_by(OrderTable.create_time.desc()).paginate(page, PAGE_SIZE)
+            .order_by(OrderTable.modify_time.desc()).paginate(page, PAGE_SIZE)
         return render_template('admin_query.html', paginate=paginate, url=url)
     elif query_type == 'book':
         paginate = Book.query.filter(or_(Book.name.like('%' + query_str + '%'), Book.id == int(str_to_int))).paginate(
@@ -778,7 +746,8 @@ def admin_query(query_type='', query_str=''):
                                paginate=paginate, url=url)
     elif query_type == 'book_classify':
         paginate = BookClassify.query.filter(
-            or_(BookClassify.name.like('%' + query_str + '%'), BookClassify.id == int(str_to_int))).paginate(page, PAGE_SIZE, False)
+            or_(BookClassify.name.like('%' + query_str + '%'), BookClassify.id == int(str_to_int)))\
+            .order_by(BookClassify.id).paginate(page, PAGE_SIZE, False)
         return render_template('admin_query.html', paginate=paginate, url=url)
     else:
         abort(404)
@@ -834,6 +803,18 @@ def comment_reply():
     return jsonify()
 
 
+# 用户和管理员 删除评论
+@app.route('/admin/del_comment_<comment_id>', methods=['POST'])
+@app.route('/del_comment_<comment_id>', methods=['POST'])
+def comment_del(comment_id):
+    comment = Comment.query.filter(Comment.id == comment_id).one()
+    if comment.from_user_id == get_user().id:
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({'msg': 'success'})
+    return jsonify({'msg': 'error'})
+
+
 # 管理滚动图片
 @app.route('/admin/carousel')
 @check_admin
@@ -851,7 +832,7 @@ def admin_add_carousel():
     random_filename = now_time + image.filename
     save_path = os.path.join(CAROUSEL_PATH, random_filename)
     file_path = os.path.join(base_dir, CAROUSEL_PATH[1:], random_filename)
-    sort_num = len(Carousel.query.all()) + 1
+    sort_num = len(Carousel.query.all())
     carousel = Carousel(url=save_path, sort=sort_num)
     db.session.add(carousel)
     db.session.commit()
@@ -879,7 +860,11 @@ def admin_save_carousel_sort():
 @check_admin
 def admin_del_carousel():
     crs_id = request.args.get('id')
+    carousels = Carousel.query.order_by(Carousel.sort).all()
     carousel = Carousel.query.filter(Carousel.id == crs_id).one()
+    the_index = carousels.index(carousel)
+    for tmp in carousels[the_index + 1:]:
+        tmp.sort -= 1
     path = carousel.url
     db.session.delete(carousel)
     db.session.commit()
@@ -891,30 +876,6 @@ def admin_del_carousel():
 @app.route('/replay', methods=['POST'])
 def user_comment():
     return comment_reply()
-
-
-def get_user():
-    user_id = session.get(USER_ID)
-    if user_id:
-        user = User.query.filter(User.id == user_id).first()
-        if user:
-            return user
-    return None
-
-
-# 管理员检查
-@app.before_request
-def validate_login():
-    urls = request.full_path.split('/')
-    user = get_user()
-    if urls[1] != 'static':
-        if urls[1] == 'admin':
-            if not user or not user.admin:
-                flash('你不是管理员')
-                return redirect(url_for('index'))
-        elif user and user.admin:
-            flash('你不是用户')
-            return redirect(url_for('admin_view'))
 
 
 # 获取新书查询
@@ -940,7 +901,7 @@ def get_sales_books_query():
 # 保存上下文变量
 @app.context_processor
 def my_context_processor():
-    book_classifies = BookClassify.query.all()
+    book_classifies = BookClassify.query.order_by(BookClassify.id).all()
     new_books = get_new_books_query().all()
     sales_books = get_sales_books_query().all()
     my_dict = {}
@@ -958,22 +919,6 @@ def my_context_processor():
     return my_dict
 
 
-# 捕捉自定义 登录状态异常
-@app.errorhandler(CheckLoginError)
-def error_no_login(error):
-    return redirect(url_for('login'))
-
-
-@app.errorhandler(404)
-def error_404(error):
-    return '找不到页面'
-
-
-@app.errorhandler(500)
-def error_500(error):
-    return '服务器去吃饭了，请稍后再试'
-
-
 from alipay import alipay, RESULT_URL, REFUND_NOTIFY
 
 
@@ -981,7 +926,7 @@ from alipay import alipay, RESULT_URL, REFUND_NOTIFY
 def pay_api(order):
     # 传递参数执行支付类里的direct_pay方法，返回签名后的支付参数，
     url = alipay.direct_pay(
-        subject=user.username + str(order.id),  # 订单名称
+        subject=get_user().username + str(order.id),  # 订单名称
         # 订单号生成，一般是当前时间(精确到秒)+用户ID+随机数
         out_trade_no=order.id,  # 订单号
         total_amount=order.payment_amount,  # 支付金额
@@ -1006,11 +951,13 @@ def refund(order):
     jsont = jsont.get('alipay_trade_refund_response')
     statu = jsont.get('fund_change')
     if statu == 'Y':
-        order.state = '已取消'
+        if order.state != OrderState.Returned.value:
+            order.state = OrderState.Cancel.value
+        order.modify_time = datetime.now()
         db.session.commit()
         flash('退款成功')
     else:
-        flash('退款失败，请重试')
+        flash('退款失败，请再一次尝试或联系管理员')
     user = get_user()
     if user and user.admin:
         return admin_order_detail(order.id)
@@ -1039,7 +986,7 @@ def pay_test():
 
 # 测试退款接口
 @app.route('/refund/')
-def refund():
+def test_refund():
     url = alipay.api_alipay_trade_refund(
         refund_amount=111,
         out_trade_no='20190323122126'
@@ -1065,8 +1012,9 @@ def notify():
     order_id = request.form.get('out_trade_no')
     order = OrderTable.query.filter(order_id == OrderTable.id).one()
     # 修改订单状态以及其他操作
-    if order.state == '待付款':
-        order.state = '待发货'
+    if order.state == OrderState.WaitPay.value:
+        order.state = OrderState.WaitDelivery.value
+        order.modify_time = datetime.now()
         db.session.commit()
     else:
         abort(404)

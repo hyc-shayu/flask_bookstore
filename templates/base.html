@@ -66,7 +66,7 @@
 
 {% block fixed_div %}
     <div class="base-page-fixed show_modal">
-        <div class="list-group">
+        <div class="list-group transparent">
             <a href="{{ url_for('rank_book', rank_type='new') }}" class="list-group-item list-group-item-success">新书上架</a>
             {% for book in new_books[:5] %}
                 <a href="javascript:void(0);" class="list-group-item" data-toggle="modal"
@@ -74,7 +74,7 @@
                    data-url="{{ url_for('book_detail_customer',book_id=book.id) }}">{{ book.name }}</a>
             {% endfor %}
         </div>
-        <div class="list-group">
+        <div class="list-group transparent">
             <a href="{{ url_for('rank_book', rank_type='sales') }}" class="list-group-item list-group-item-success">畅销排行</a>
             {% for book in sales_books[:5] %}
                 <a href="javascript:void(0);" class="list-group-item" data-toggle="modal"
@@ -88,7 +88,7 @@
 {# 滚动荧幕 #}
 {% block carousel %}
     {% if carousels %}
-    <div class="container" style="background: url('{{ url_for('static',filename='image/carousel-background.jpg') }}') no-repeat ;background-size:cover;">
+    <div class="container" style="background: url('{{ url_for('static',filename='image/carousel-background.jpg') }}') no-repeat ;background-size:cover;padding: 0;">
         <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
             <!-- Indicators -->
             <ol class="carousel-indicators">

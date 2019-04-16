@@ -52,10 +52,16 @@
                             <cite>回复</cite>&nbsp;&nbsp;{{ comment.to_user.username }}&nbsp;&nbsp;
                         {% endif %}
                         <cite>发表于</cite>&nbsp;&nbsp;&nbsp;{{ comment.publish_time }}
-                        {% if user and user.id != comment.from_user_id %}
-                            <p class="text-right"><a href="javascript:void(0);"
-                                                     onclick="setTarget('{{ comment.from_user_id }}','{{ comment.from_user.username }}')">回复</a>
-                            </p>
+                        {% if user %}
+                                <p class="text-right">
+                            {% if user.id != comment.from_user_id %}
+                                <a href="javascript:void(0);"
+                                   onclick="setTarget('{{ comment.from_user_id }}','{{ comment.from_user.username }}')">回复</a>
+                            {% else %}
+                                <a class="del-comment" href="javascript:;" data-url="{% if user.admin %}/admin{% endif %}/del_comment_{{ comment.id }}"
+                                   >删除</a>
+                            {% endif %}
+                                </p>
                         {% endif %}
                     </footer>
                 </blockquote>
@@ -115,6 +121,7 @@
                 </form>
                 <button id="submit_btn" type="button" class="btn btn-primary"
                         data-url="
+
 
                                 {% if user.admin %}{{ url_for('comment_reply') }}{% else %}{{ url_for('user_comment') }}{% endif %}">
                     评论

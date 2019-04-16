@@ -49,12 +49,20 @@
             <div class="pull-left">
                 <form action="">
                     <select id="select_state" class="form-control" name="state">
-                        <option value="待发货">待发货</option>
-                        <option value="待收货">待收货</option>
+                        {% if order.state == '待发货' %}
+                            <option value="待发货">待发货</option>
+                            <option value="待收货">待收货</option>
+                        {% elif order.state == '申请退货' %}
+                            <option value="申请退货">申请退货</option>
+                            <option value="同意退货">同意退货</option>
+                            <option value="拒绝退货">拒绝退货</option>
+                        {% endif %}
                     </select>
                 </form>
             </div>
-            <button id="submit_btn" type="button" class="btn btn-primary" data-url="{{ url_for('order_update', order_id=order.id) }}">修改</button>
+            <button id="submit_btn" type="button" class="btn btn-primary"
+                    data-url="{{ url_for('order_update', order_id=order.id) }}">修改
+            </button>
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
         </div>
     </div>
@@ -64,14 +72,14 @@
         $('#submit_btn').on('click', function () {
             let url = $(this).data('url');
             $.ajax({
-               type:'POST',
-               url: url,
-               data: {
-                   state: $('#select_state option:selected').val()
-               },
-               success:function (data) {
-                 window.location.href={{ url_for('admin_view') }};
-               }
+                type: 'POST',
+                url: url,
+                data: {
+                    state: $('#select_state option:selected').val()
+                },
+                success: function (data) {
+                    window.location.href ={{ url_for('admin_view') }};
+                }
             });
         });
     });

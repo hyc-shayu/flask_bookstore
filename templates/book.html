@@ -14,9 +14,9 @@
     {% endif %}
 
     <div style="margin-bottom: 10px">
-        <a href="{{ url_for(sort_url, sort_type='time', **my_dict )}}?page={{ request.args.get('page') }}"
+        <a href="{{ url_for(sort_url, sort_type='time', **my_dict ) }}?page={{ request.args.get('page') }}"
            class="btn btn-default btn-xs">时间<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a>
-        <a href="{{ url_for(sort_url, sort_type='time_up', **my_dict )}}?page={{ request.args.get('page') }}"
+        <a href="{{ url_for(sort_url, sort_type='time_up', **my_dict ) }}?page={{ request.args.get('page') }}"
            class="btn btn-default btn-xs">时间<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a>
 
         <a href="{{ url_for(sort_url, sort_type='sale', **my_dict) }}?page={{ request.args.get('page') }}"
@@ -37,11 +37,15 @@
     {% if title %}
         <h2>{{ title }}</h2>
     {% endif %}
-    <div class="row">
-        {% for book in paginate.items %}
-            {% include 'book_sub_page.html' %}
-        {% endfor %}
-    </div>
+    {% for book in paginate.items %}
+        {% if loop.index0 % 4 ==0 %}
+            <div class="row">
+        {% endif %}
+    {% include 'book_sub_page.html' %}
+    {% if loop.index0 % 4 == 3 or loop.last %}
+        </div>
+    {% endif %}
+    {% endfor %}
     {% if paginate.pages > 1 %}
         {{ macros.pagination_widget_href_get(paginate, url) }}
     {% endif %}

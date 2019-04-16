@@ -33,7 +33,7 @@
                     <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
                        data-url="{{ url_for('book_detail_customer',book_id=item.book.id) }}"
                        class="thumbnail">
-                        <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                        <img src="{{ item.book.image_url }}" alt=""
                              style="height: 100px;">
                     </a>
                 </td>
@@ -58,7 +58,7 @@
         <a href="{{ url_for('order_cancel', order_id = order.id) }}" class="btn btn-danger pull-right">取消订单</a>
     {% elif order.state == '待收货' %}
         <a href="{{ url_for('order_complete', order_id = order.id) }}" class="btn btn-success pull-right">确认收货</a>
-    {% elif order.state == '已完成' %}
+    {% elif order.state == '已收货' %}
         <a href="{{ url_for('order_apply_return', order_id = order.id) }}" class="btn btn-warning pull-right">申请退货</a>
     {% endif %}
 {% endblock %}

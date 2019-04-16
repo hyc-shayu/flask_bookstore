@@ -23,7 +23,7 @@
                     <a href="javascript:void(0);" data-toggle="modal" data-target="#modal-comment-book"
                        data-url="{{ url_for('book_detail_customer',book_id=item.book.id) }}"
                        class="thumbnail">
-                        <img src="{{ url_for('static', filename='image/icon.png') }}" alt=""
+                        <img src="{{ item.book.image_url }}" alt=""
                              style="height: 100px;">
                     </a>
                 </td>
