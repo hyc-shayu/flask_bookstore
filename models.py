@@ -1,7 +1,7 @@
 from app import db
 from datetime import datetime
 
-user_favorite_book_table = db.Table('user_favorite_book',db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+user_favorite_book_table = db.Table('user_favorite_book', db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
                                 db.Column('book_id', db.Integer, db.ForeignKey('book.id')))
 
 

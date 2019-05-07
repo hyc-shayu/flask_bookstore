@@ -54,7 +54,7 @@
         {% endfor %}
         </tbody>
     </table>
-    {% if user.cart.cart_items|length > 0 %}
+    {% if user.cart.cart_items|length > 0 and user.recipients|length > 0 %}
         <div>
             <form>
             </form>

@@ -11,6 +11,7 @@ from forms import LoginForm, PersonalForm, UpdatePasswordForm
 from setting import *
 from utils import *
 from errors import *
+import re
 
 
 # 任务调度方法 检查是否超时，超时订单修改状态
@@ -174,14 +175,16 @@ def register():
             flash('用户名已存在')
             return redirect(url_for('register'))
         else:
-            if password1 != password2:
+            if len(password1) < 3:
+                flash('密码长度至少为3')
+            elif password1 != password2:
                 flash('两次密码不一致')
-                return redirect(url_for('register'))
             else:
                 user = User(username=username, password=password1)
                 db.session.add(user)
                 db.session.commit()
                 return redirect(url_for('login'))
+            return redirect(url_for('register'))
 
 
 @app.route('/admin/logout/')
@@ -207,7 +210,13 @@ def personal_information():
         user.name = form.name.data
         user.birthday = form.birthday.data
         user.sex = form.sex.data
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            print(e.args)
+            db.session.rollback()
+            flash('请检查格式是否正确')
+            return render_template('personal_information.html', form=form, pwd_form=pwd_form)
         flash('修改成功')
         return redirect(request.path)
     # 提交修改密码
@@ -235,6 +244,9 @@ def save_up_address():
         recipient.name = name
         recipient.phone = phone
         recipient.address = address
+    elif not re.match('^0\d{2,3}\d{7,8}$|^1[358]\d{9}$|^147\d{8}', phone):
+        flash('电话号码不正确')
+        return ''
     else:
         recipient = Recipient(user_id=get_user().id, name=name, phone=phone, address=address)
         db.session.add(recipient)
@@ -543,10 +555,12 @@ def admin_order_recipient_modify(order_id):
 
 
 # 查看图书分类-局部刷新
-@app.route('/admin/book_classify_manage_<int:page>')
 @app.route('/admin/book_classify_manage')
-def book_classify_manage(page=1):
-    paginate = BookClassify.query.order_by(BookClassify.id).paginate(page, PAGE_SIZE, False)
+def book_classify_manage():
+    page = request.args.get('page')
+    if page is None:
+        page = 1
+    paginate = BookClassify.query.order_by(BookClassify.id).paginate(int(page), PAGE_SIZE, False)
     return render_template('admin_book_classify_manage.html', paginate=paginate)
 
 
