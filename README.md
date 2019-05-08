@@ -7,4 +7,4 @@
 管理员 可以 管理 图书、订单、滚屏图片 等。
 
 首页
-![image](https://github.com/hyc-shayu/flask_bookstore/raw/master/image/1.png)
+![image](https://github.com/hyc-shayu/flask_bookstore/blob/master/image/1.PNG)
