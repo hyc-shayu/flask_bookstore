@@ -7,4 +7,4 @@
 管理员 可以 管理 图书、订单、滚屏图片 等。
 
 首页
-![image](http://github.com/itmyhome2013/readme_add_pic/raw/master/images/nongshalie.jpg)
+![image](https://github.com/hyc-shayu/flask_bookstore/raw/master/image/1.png)
