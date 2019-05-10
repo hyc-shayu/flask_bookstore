@@ -76,7 +76,7 @@ $(function () {
     });
 
     //支付 关闭 跳转到订单
-    $('#div_modal').on('click', 'button', function () {
+    $('#div_modal').on('click', '.pay_dialog button', function () {
         window.location.href='/orders';
     });
 

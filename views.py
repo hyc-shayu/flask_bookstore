@@ -246,7 +246,7 @@ def save_up_address():
         recipient.address = address
     elif not re.match('^0\d{2,3}\d{7,8}$|^1[358]\d{9}$|^147\d{8}', phone):
         flash('电话号码不正确')
-        return ''
+        return redirect(request.referrer)
     else:
         recipient = Recipient(user_id=get_user().id, name=name, phone=phone, address=address)
         db.session.add(recipient)
